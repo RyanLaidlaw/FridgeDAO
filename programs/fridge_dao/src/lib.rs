@@ -12,7 +12,27 @@ pub mod fridge_dao {
     use super::*;
 
     pub fn initialize(ctx: Context<InitDAO>) -> Result<()> {
-        msg!("Greetings from: {:?}", ctx.program_id);
+        instructions::init_dao(ctx)?;
+        Ok(())
+    }
+
+    pub fn deposit(ctx: Context<Deposit>) -> Result<()> {
+        instructions::deposit(ctx)?;
+        Ok(())
+    }
+
+    pub fn vote(ctx: Context<Vote>) -> Result<()> {
+        instructions::vote(ctx)?;
+        Ok(())
+    }
+
+    pub fn execute_proposal(ctx: Context<Execute>) -> Result<()> {
+        instructions::execute_proposal(ctx)?;
+        Ok(())
+    }
+
+    pub fn cancel(ctx: Context<Cancel>) -> Result<()> {
+        instructions::cancel(ctx)?;
         Ok(())
     }
 }

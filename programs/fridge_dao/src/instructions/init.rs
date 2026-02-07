@@ -6,3 +6,7 @@ use crate::error;
 pub struct InitDAO { // <'info>
 
 }
+
+pub fn init_dao(ctx: Context<InitDAO>) -> Result<()> {
+    Ok(())
+}
