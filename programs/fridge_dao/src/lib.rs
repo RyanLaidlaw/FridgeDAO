@@ -26,6 +26,11 @@ pub mod fridge_dao {
         Ok(())
     }
 
+    pub fn propose(ctx: Context<Propose>) -> Result<()> {
+        instructions::propose(ctx)?;
+        Ok(())
+    }
+
     pub fn execute_proposal(ctx: Context<Execute>) -> Result<()> {
         instructions::execute_proposal(ctx)?;
         Ok(())
