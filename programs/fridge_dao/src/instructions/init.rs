@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-//use anchor_spl::{token_interface::{Mint}}; // blake3 error when used
+use anchor_spl::token_interface::Mint;
 
 use crate::error;
 use crate::state;
@@ -27,7 +27,7 @@ pub struct InitDAO<'info> {
     )]
     pub treasury: SystemAccount<'info>,
 
-    // pub usdc_mint: InterfaceAccount<'info, Mint>,
+    pub usdc_mint: InterfaceAccount<'info, Mint>,
 
     pub system_program: Program<'info, System>,
 }
@@ -37,7 +37,7 @@ pub fn init_dao(ctx: Context<InitDAO>) -> Result<()> {
 
     dao.authority = ctx.accounts.authority.key();
     dao.treasury = ctx.accounts.treasury.key();
-    // dao.usdc_mint = ctx.accounts.usdc_mint.key();
+    dao.usdc_mint = ctx.accounts.usdc_mint.key();
     dao.proposal_count = 0;
 
     Ok(())
