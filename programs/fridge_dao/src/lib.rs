@@ -21,13 +21,13 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn vote(ctx: Context<Vote>) -> Result<()> {
-        instructions::vote(ctx)?;
+    pub fn vote(ctx: Context<Vote>, proposal_number: u64, vote_choice: state::VoteChoice) -> Result<()> {
+        instructions::vote(ctx, proposal_number, vote_choice)?;
         Ok(())
     }
 
-    pub fn propose(ctx: Context<Propose>) -> Result<()> {
-        instructions::propose(ctx)?;
+    pub fn propose(ctx: Context<Propose>, description: String) -> Result<()> {
+        instructions::propose(ctx, description)?;
         Ok(())
     }
 

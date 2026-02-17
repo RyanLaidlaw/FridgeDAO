@@ -13,10 +13,7 @@ pub struct InitDAO<'info> {
         init,
         payer = authority,
         space = 8 + state::FridgeDao::INIT_SPACE,
-        seeds = [
-            state::FridgeDao::SEED_PREFIX,
-            authority.key().as_ref(),
-        ],
+        seeds = [state::FridgeDao::SEED_PREFIX,],
         bump,
     )]
     pub fridge_dao: Account<'info, state::FridgeDao>,
@@ -39,6 +36,8 @@ pub fn init_dao(ctx: Context<InitDAO>) -> Result<()> {
     dao.treasury = ctx.accounts.treasury.key();
     dao.usdc_mint = ctx.accounts.usdc_mint.key();
     dao.proposal_count = 0;
+    dao.bump = ctx.bumps.fridge_dao;
+    dao.treasury_bump = ctx.bumps.treasury;
 
     Ok(())
 }
