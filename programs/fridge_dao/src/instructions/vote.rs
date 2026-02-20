@@ -46,8 +46,10 @@ pub struct Vote<'info> {
 pub fn vote(ctx: Context<Vote>, proposal_id: u64, vote_choice: state::VoteChoice) -> Result<()> {
     let vote = &mut ctx.accounts.vote;
     let proposal = &mut ctx.accounts.proposal;
+    let voter = &ctx.accounts.voter;
 
     require!(proposal_id == proposal.identifier, error::Error::CouldNotFindProposal);
+    require!(!proposal.voters.contains(&voter.key()), error::Error::AlreadyVoted);
 
     let vote_power = 1000; // TODO add vote power logic
 
@@ -61,6 +63,8 @@ pub fn vote(ctx: Context<Vote>, proposal_id: u64, vote_choice: state::VoteChoice
         state::VoteChoice::Yes => proposal.yes_votes += vote_power,
         state::VoteChoice::No => proposal.no_votes += vote_power,
     }
+
+    proposal.voters.push(voter.key());
 
     Ok(())
 }

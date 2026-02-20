@@ -10,4 +10,6 @@ pub enum Error {
     VotingPeriodNotStarted,
     #[msg("Could not find proposal")]
     CouldNotFindProposal,
+    #[msg("User already voted")]
+    AlreadyVoted,
 }

@@ -39,6 +39,7 @@ pub fn propose(ctx: Context<Propose>, description: String) -> Result<()> {
     dao.proposal_count += 1;
 
     proposal.identifier = dao.proposal_count;
+    proposal.voters = Vec::new();
     proposal.proposer = ctx.accounts.proposer.key();
     proposal.description = description;
     proposal.yes_votes = 0;

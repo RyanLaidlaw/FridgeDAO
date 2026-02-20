@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::Mint;
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
 use crate::error;
 use crate::state;
@@ -19,13 +19,22 @@ pub struct InitDAO<'info> {
     pub fridge_dao: Account<'info, state::FridgeDao>,
 
     #[account(
-        seeds = [b"treasury", fridge_dao.key().as_ref()],
+        seeds = [b"treasury_authority", fridge_dao.key().as_ref()],
         bump
     )]
-    pub treasury: SystemAccount<'info>,
+    pub treasury_authority: SystemAccount<'info>,
+
+    #[account(
+        init,
+        payer = authority,
+        token::mint = usdc_mint,
+        token::authority = treasury_authority,
+    )]
+    pub treasury: InterfaceAccount<'info, TokenAccount>,
 
     pub usdc_mint: InterfaceAccount<'info, Mint>,
 
+    pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
 }
 
@@ -37,7 +46,7 @@ pub fn init_dao(ctx: Context<InitDAO>) -> Result<()> {
     dao.usdc_mint = ctx.accounts.usdc_mint.key();
     dao.proposal_count = 0;
     dao.bump = ctx.bumps.fridge_dao;
-    dao.treasury_bump = ctx.bumps.treasury;
+    dao.treasury_bump = ctx.bumps.treasury_authority;
 
     Ok(())
 }
