@@ -38,7 +38,7 @@ pub struct InitDAO<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn init_dao(ctx: Context<InitDAO>) -> Result<()> {
+pub fn initialize(ctx: Context<InitDAO>) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
 
     dao.authority = ctx.accounts.authority.key();

@@ -12,7 +12,7 @@ pub mod fridge_dao {
     use super::*;
 
     pub fn initialize(ctx: Context<InitDAO>) -> Result<()> {
-        instructions::init_dao(ctx)?;
+        instructions::initialize(ctx)?;
         Ok(())
     }
 
