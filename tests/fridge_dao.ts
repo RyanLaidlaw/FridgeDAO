@@ -18,8 +18,8 @@ describe("fridge_dao", () => {
         program.programId
       );
 
-      const [treasuryAuthPda, treasuryAuthBump] = anchor.web3.PublicKey.findProgramAddressSync(
-        [Buffer.from("treasury_authority"),
+      const [vaultAuthPda, vaultAuthBump] = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from("vault_authority"),
           fridgeDaoPda.toBuffer(),
         ],
         program.programId
@@ -33,18 +33,18 @@ describe("fridge_dao", () => {
         6
       );
 
-      const treasuryTokenAccount = anchor.web3.Keypair.generate();
+      const vaultTokenAccount = anchor.web3.Keypair.generate();
 
       const txn = await program.methods.initialize().accounts({
         authority: authority.publicKey,
         fridgeDao: fridgeDaoPda,
-        treasuryAuthority: treasuryAuthPda,
-        treasury: treasuryTokenAccount.publicKey,
+        vaultAuthority: vaultAuthPda,
+        vault: vaultTokenAccount.publicKey,
         usdcMint: usdcMint,
         tokenProgram: TOKEN_PROGRAM_ID,
         systemProgram: anchor.web3.SystemProgram.programId,
       })
-      .signers([treasuryTokenAccount])
+      .signers([vaultTokenAccount])
       .rpc()
 
       console.log("Txn signature:", txn);
@@ -53,10 +53,10 @@ describe("fridge_dao", () => {
       console.log("FridgeDao:", dao);
 
       assert.equal(dao.authority.toBase58(), authority.publicKey.toBase58(), "Authorities not equal");
-      assert.equal(dao.treasury.toBase58(), treasuryTokenAccount.publicKey.toBase58(), 'Treasuries not equal');
+      assert.equal(dao.vault.toBase58(), vaultTokenAccount.publicKey.toBase58(), 'Treasuries not equal');
       assert.equal(dao.usdcMint.toBase58(), usdcMint.toBase58(), "USDC Mint accounts not equal");
       assert(dao.proposalCount.eq(new anchor.BN(0)), "Proposal Count is not cleared to 0")
       assert.equal(dao.bump, fridgeDaoBump, "Fridge Bumps not equal");
-      assert.equal(dao.treasuryBump, treasuryAuthBump, "Treasury Bumps not equal");
+      assert.equal(dao.vaultBump, vaultAuthBump, "Vault Bumps not equal");
   });
 });

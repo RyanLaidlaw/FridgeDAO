@@ -4,11 +4,11 @@ use anchor_lang::prelude::*;
 #[derive(InitSpace)]
 pub struct FridgeDao {
     pub authority: Pubkey,
-    pub treasury: Pubkey,
+    pub vault: Pubkey,
     pub usdc_mint: Pubkey,
     pub proposal_count: u64,
     pub bump: u8,
-    pub treasury_bump: u8,
+    pub vault_bump: u8,
 }
 
 impl FridgeDao {
