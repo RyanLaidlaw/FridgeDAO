@@ -31,8 +31,8 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn execute_proposal(ctx: Context<Execute>) -> Result<()> {
-        instructions::execute_proposal(ctx)?;
+    pub fn choose_proposal(ctx: Context<Choose>) -> Result<()> {
+        instructions::choose_proposal(ctx)?;
         Ok(())
     }
 
