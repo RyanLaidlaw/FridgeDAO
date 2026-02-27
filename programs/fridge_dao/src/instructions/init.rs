@@ -38,8 +38,11 @@ pub struct InitDAO<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn initialize(ctx: Context<InitDAO>) -> Result<()> {
+pub fn initialize(ctx: Context<InitDAO>, vote_period_len: u64, time_until_first_vote: u64) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
+
+    let clock = Clock::get()?;
+    let next_vote_time = clock.unix_timestamp + time_until_first_vote as i64;
 
     dao.authority = ctx.accounts.authority.key();
     dao.vault = ctx.accounts.vault.key();
@@ -47,6 +50,9 @@ pub fn initialize(ctx: Context<InitDAO>) -> Result<()> {
     dao.proposal_count = 0;
     dao.bump = ctx.bumps.fridge_dao;
     dao.vault_bump = ctx.bumps.vault_authority;
+    dao.vote_period = vote_period_len;
+    dao.next_vote_allowed_at = next_vote_time;
+    dao.vote_cooldown = 1_209_600; // two weeks (can be updated)
 
     Ok(())
 }

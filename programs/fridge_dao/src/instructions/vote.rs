@@ -47,9 +47,18 @@ pub fn vote(ctx: Context<Vote>, proposal_id: u64, vote_choice: state::VoteChoice
     let vote = &mut ctx.accounts.vote;
     let proposal = &mut ctx.accounts.proposal;
     let voter = &ctx.accounts.voter;
+    let dao = &ctx.accounts.fridge_dao;
+
+    let clock = Clock::get()?;
+    let now = clock.unix_timestamp;
+    let voting_end = dao
+        .next_vote_allowed_at
+        .checked_add(dao.vote_period as i64)
+        .ok_or(error::Error::MathOverflowOrUnderflow)?;
 
     require!(proposal_id == proposal.identifier, error::Error::CouldNotFindProposal);
     require!(!proposal.voters.contains(&voter.key()), error::Error::AlreadyVoted);
+    require!(now >= dao.next_vote_allowed_at && now < voting_end, error::Error::NotInVotingPeriod);
 
     let vote_power = 1000; // TODO add vote power logic
 

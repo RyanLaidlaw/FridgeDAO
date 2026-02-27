@@ -11,13 +11,18 @@ pub mod fridge_dao {
     pub use super::instructions::*;
     use super::*;
 
-    pub fn initialize(ctx: Context<InitDAO>) -> Result<()> {
-        instructions::initialize(ctx)?;
+    pub fn initialize(ctx: Context<InitDAO>, vote_period_len: u64, time_until_first_vote: u64) -> Result<()> {
+        instructions::initialize(ctx, vote_period_len, time_until_first_vote)?;
         Ok(())
     }
 
     pub fn deposit(ctx: Context<Deposit>) -> Result<()> {
         instructions::deposit(ctx)?;
+        Ok(())
+    }
+
+    pub fn withdraw(ctx: Context<Withdraw>) -> Result<()> {
+        instructions::withdraw(ctx)?;
         Ok(())
     }
 
@@ -38,6 +43,11 @@ pub mod fridge_dao {
 
     pub fn cancel(ctx: Context<Cancel>) -> Result<()> {
         instructions::cancel(ctx)?;
+        Ok(())
+    }
+
+    pub fn update_vote_cooldown(ctx: Context<UpdateCooldown>, new_cooldown: u64) -> Result<()> {
+        instructions::update_vote_cooldown(ctx, new_cooldown)?;
         Ok(())
     }
 }

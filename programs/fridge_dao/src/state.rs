@@ -9,6 +9,9 @@ pub struct FridgeDao {
     pub proposal_count: u64,
     pub bump: u8,
     pub vault_bump: u8,
+    pub vote_period: u64, // duration of voting period (seconds)
+    pub vote_cooldown: u64, // time between voting periods (seconds)
+    pub next_vote_allowed_at: i64, // absolute timestamp
 }
 
 impl FridgeDao {

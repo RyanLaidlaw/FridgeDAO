@@ -6,11 +6,11 @@ import { TOKEN_PROGRAM_ID, createMint } from "@solana/spl-token";
 
 describe("fridge_dao", () => {
   // Configure the client to use the local cluster.
-  const provder = anchor.AnchorProvider.env()
-  anchor.setProvider(provder);
+  const provider = anchor.AnchorProvider.env()
+  anchor.setProvider(provider);
 
   const program = anchor.workspace.fridgeDao as Program<FridgeDao>;
-  const authority = provder.wallet;
+  const authority = provider.wallet;
 
   it("Is correctly initialized", async () => {
       const [fridgeDaoPda, fridgeDaoBump] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -26,7 +26,7 @@ describe("fridge_dao", () => {
       );
 
       const usdcMint = await createMint(
-        provder.connection,
+        provider.connection,
         authority.payer,
         authority.publicKey,
         null, // possibly add freeze authority later
@@ -35,7 +35,12 @@ describe("fridge_dao", () => {
 
       const vaultTokenAccount = anchor.web3.Keypair.generate();
 
-      const txn = await program.methods.initialize().accounts({
+      const voting_period = 1000;
+      const time_until_start = 100;
+      const slot = await provider.connection.getSlot();
+      const blockTime = await provider.connection.getBlockTime(slot);
+
+      const txn = await program.methods.initialize(new anchor.BN(voting_period), new anchor.BN(time_until_start)).accounts({
         authority: authority.publicKey,
         fridgeDao: fridgeDaoPda,
         vaultAuthority: vaultAuthPda,
@@ -58,5 +63,8 @@ describe("fridge_dao", () => {
       assert(dao.proposalCount.eq(new anchor.BN(0)), "Proposal Count is not cleared to 0")
       assert.equal(dao.bump, fridgeDaoBump, "Fridge Bumps not equal");
       assert.equal(dao.vaultBump, vaultAuthBump, "Vault Bumps not equal");
+
+      assert(dao.votePeriod.eq(new anchor.BN(voting_period)), "Vote periods not equal");
+      assert(new anchor.BN(blockTime).lte(dao.nextVoteAllowedAt),"We are not past the voting start time");
   });
 });
