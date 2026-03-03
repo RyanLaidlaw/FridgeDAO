@@ -3,6 +3,7 @@ use std::ops::Add;
 use anchor_lang::prelude::*;
 
 use crate::state;
+use crate::error;
 
 #[derive(Accounts)]
 pub struct Propose<'info> {
@@ -33,10 +34,16 @@ pub struct Propose<'info> {
 }
 
 pub fn propose(ctx: Context<Propose>, description: String) -> Result<()> {
-    let proposal = &mut ctx.accounts.proposal;
     let dao = &mut ctx.accounts.fridge_dao;
+    let proposal = &mut ctx.accounts.proposal;
+
+    require!(dao.valid_member_addresses.contains(ctx.accounts.proposer.key), error::Error::InvalidMember);
     
     dao.proposal_count += 1;
+
+    require!(dao.proposal_count <= 15, error::Error::AtMaxProposals);
+
+    dao.proposals.push(proposal.key());
 
     proposal.identifier = dao.proposal_count;
     proposal.voters = Vec::new();

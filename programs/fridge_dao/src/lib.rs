@@ -26,8 +26,8 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn vote(ctx: Context<Vote>, proposal_number: u64, vote_choice: state::VoteChoice) -> Result<()> {
-        instructions::vote(ctx, proposal_number, vote_choice)?;
+    pub fn vote(ctx: Context<Vote>, proposal_number: u64) -> Result<()> {
+        instructions::vote(ctx, proposal_number)?;
         Ok(())
     }
 
@@ -48,6 +48,16 @@ pub mod fridge_dao {
 
     pub fn update_vote_cooldown(ctx: Context<UpdateCooldown>, new_cooldown: u64) -> Result<()> {
         instructions::update_vote_cooldown(ctx, new_cooldown)?;
+        Ok(())
+    }
+
+    pub fn add_vald_address(ctx: Context<AddAddress>) -> Result<()> {
+        instructions::add_valid_address(ctx)?;
+        Ok(())
+    }
+
+    pub fn remove_vald_address(ctx: Context<RemoveAddress>) -> Result<()> {
+        instructions::remove_valid_address(ctx)?;
         Ok(())
     }
 }

@@ -1,5 +1,6 @@
 use anchor_lang::prelude::*;
 
+use crate::instructions::lib;
 use crate::state;
 use crate::error;
 
@@ -43,35 +44,25 @@ pub struct Vote<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn vote(ctx: Context<Vote>, proposal_id: u64, vote_choice: state::VoteChoice) -> Result<()> {
-    let vote = &mut ctx.accounts.vote;
-    let proposal = &mut ctx.accounts.proposal;
+pub fn vote(ctx: Context<Vote>, proposal_id: u64) -> Result<()> {
     let voter = &ctx.accounts.voter;
     let dao = &ctx.accounts.fridge_dao;
+    let vote = &mut ctx.accounts.vote;
+    let proposal = &mut ctx.accounts.proposal;
 
-    let clock = Clock::get()?;
-    let now = clock.unix_timestamp;
-    let voting_end = dao
-        .next_vote_allowed_at
-        .checked_add(dao.vote_period as i64)
-        .ok_or(error::Error::MathOverflowOrUnderflow)?;
+    require!(dao.valid_member_addresses.contains(voter.key), error::Error::InvalidMember);
 
+    let now = Clock::get()?.unix_timestamp;
+    let voting_end = lib::get_voting_end(&dao)?;
+
+    // add check for verified wallet addresses
     require!(proposal_id == proposal.identifier, error::Error::CouldNotFindProposal);
-    require!(!proposal.voters.contains(&voter.key()), error::Error::AlreadyVoted);
+    require!(!proposal.voters.contains(voter.key), error::Error::AlreadyVoted);
     require!(now >= dao.next_vote_allowed_at && now < voting_end, error::Error::NotInVotingPeriod);
-
-    let vote_power = 1000; // TODO add vote power logic
 
     vote.proposal = proposal.key();
     vote.voter = ctx.accounts.voter.key();
-    vote.vote_choice = vote_choice;
-    vote.vote_power = vote_power;
     vote.bump = ctx.bumps.vote;
-
-    match vote_choice {
-        state::VoteChoice::Yes => proposal.yes_votes += vote_power,
-        state::VoteChoice::No => proposal.no_votes += vote_power,
-    }
 
     proposal.voters.push(voter.key());
 

@@ -12,6 +12,10 @@ pub struct FridgeDao {
     pub vote_period: u64, // duration of voting period (seconds)
     pub vote_cooldown: u64, // time between voting periods (seconds)
     pub next_vote_allowed_at: i64, // absolute timestamp
+    #[max_len(15)]
+    pub proposals: Vec<Pubkey>,
+    #[max_len(20)]
+    pub valid_member_addresses: Vec<Pubkey>,
 }
 
 impl FridgeDao {
@@ -36,19 +40,11 @@ impl Proposal {
     pub const SEED_PREFIX: &'static [u8; 11] = b"fridge_prop";
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, PartialEq, Eq, InitSpace)]
-pub enum VoteChoice {
-    Yes, 
-    No,
-}
-
 #[account]
 #[derive(InitSpace)]
 pub struct UserVote {
     pub proposal: Pubkey,
     pub voter: Pubkey,
-    pub vote_choice: VoteChoice,
-    pub vote_power: u64,
     pub bump: u8,
 }
 
