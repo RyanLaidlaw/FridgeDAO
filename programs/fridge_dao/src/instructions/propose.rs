@@ -2,8 +2,7 @@ use std::ops::Add;
 
 use anchor_lang::prelude::*;
 
-use crate::state;
-use crate::error;
+use crate::{error, state};
 
 #[derive(Accounts)]
 pub struct Propose<'info> {

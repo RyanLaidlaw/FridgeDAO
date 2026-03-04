@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::error;
-use crate::state;
+use crate::{error, state};
 
 pub fn get_voting_end(dao: &Account<state::FridgeDao>) -> Result<i64> {
     let voting_end = dao

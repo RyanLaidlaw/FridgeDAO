@@ -22,4 +22,8 @@ pub enum Error {
     IdenticalCooldown,
     #[msg("Too many proposals")]
     AtMaxProposals,
+    #[msg("Address is already added to valid addresses")]
+    AddressAlreadyAdded,
+    #[msg("Address does not exist")]
+    AddressDoesNotExist,
 }

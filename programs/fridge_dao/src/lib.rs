@@ -51,13 +51,13 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn add_vald_address(ctx: Context<AddAddress>) -> Result<()> {
-        instructions::add_valid_address(ctx)?;
+    pub fn add_vald_address(ctx: Context<AddAddress>, new_address: Pubkey) -> Result<()> {
+        instructions::add_valid_address(ctx, new_address)?;
         Ok(())
     }
 
-    pub fn remove_vald_address(ctx: Context<RemoveAddress>) -> Result<()> {
-        instructions::remove_valid_address(ctx)?;
+    pub fn remove_vald_address(ctx: Context<RemoveAddress>, address_to_remove: Pubkey) -> Result<()> {
+        instructions::remove_valid_address(ctx, address_to_remove)?;
         Ok(())
     }
 }

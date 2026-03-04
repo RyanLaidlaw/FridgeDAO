@@ -1,8 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::instructions::lib;
-use crate::state;
-use crate::error;
+use crate::{instructions::lib, error, state};
 
 #[derive(Accounts)]
 #[instruction(proposal_id: u64)]

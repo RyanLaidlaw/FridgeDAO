@@ -1,8 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 
-use crate::error;
-use crate::state;
+use crate::{error, state};
 
 #[derive(Accounts)]
 pub struct InitDAO<'info> {
