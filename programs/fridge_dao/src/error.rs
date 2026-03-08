@@ -28,4 +28,6 @@ pub enum Error {
     AddressDoesNotExist,
     #[msg("At maximum members")]
     MaxMembers,
+    #[msg("Duplicate Address")]
+    DuplicateAddress,
 }

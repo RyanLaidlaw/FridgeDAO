@@ -105,6 +105,34 @@ describe("fridge_dao", () => {
     }
   });
 
+  it("Prevents adding duplicate addresses", async () => {
+    try {
+      txn = await program.methods.addValidAddresses([valid_addrs[0]])
+      .accounts({
+        adder: authority.publicKey,
+        fridgeDao: fridgeDaoPda,
+      }).rpc();
+      
+      assert.fail("Txn did not revert");
+    } catch (err) {
+      assert.ok(err);
+    }
+  })
+
+    it("Prevents non-authority people from adding", async () => {
+    try {
+      txn = await program.methods.addValidAddresses([valid_addrs[0]])
+      .accounts({
+        adder: anchor.web3.Keypair.generate().publicKey,
+        fridgeDao: fridgeDaoPda,
+      }).rpc();
+      
+      assert.fail("Txn did not revert");
+    } catch (err) {
+      assert.ok(err);
+    }
+  })
+
   it("Allows for removal of addresses", async () => {
     let toRemove = valid_addrs[0];
     txn = await program.methods.removeValidAddresses([toRemove])
