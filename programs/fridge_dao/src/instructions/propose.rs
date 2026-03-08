@@ -40,7 +40,7 @@ pub fn propose(ctx: Context<Propose>, description: String) -> Result<()> {
     
     dao.proposal_count += 1;
 
-    require!(dao.proposal_count <= 15, error::Error::AtMaxProposals);
+    require!(dao.proposal_count <= state::MAX_PROPOSALS as u64, error::Error::AtMaxProposals);
 
     dao.proposals.push(proposal.key());
 
@@ -48,8 +48,6 @@ pub fn propose(ctx: Context<Propose>, description: String) -> Result<()> {
     proposal.voters = Vec::new();
     proposal.proposer = ctx.accounts.proposer.key();
     proposal.description = description;
-    proposal.yes_votes = 0;
-    proposal.no_votes = 0;
     proposal.bump = ctx.bumps.proposal;
 
     Ok(())

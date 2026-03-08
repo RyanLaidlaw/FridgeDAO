@@ -53,7 +53,6 @@ pub fn vote(ctx: Context<Vote>, proposal_id: u64) -> Result<()> {
     let now = Clock::get()?.unix_timestamp;
     let voting_end = lib::get_voting_end(&dao)?;
 
-    // add check for verified wallet addresses
     require!(proposal_id == proposal.identifier, error::Error::CouldNotFindProposal);
     require!(!proposal.voters.contains(voter.key), error::Error::AlreadyVoted);
     require!(now >= dao.next_vote_allowed_at && now < voting_end, error::Error::NotInVotingPeriod);

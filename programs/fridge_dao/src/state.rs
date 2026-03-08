@@ -1,5 +1,8 @@
 use anchor_lang::prelude::*;
 
+pub const MAX_MEMBERS: usize = 20;
+pub const MAX_PROPOSALS: usize = 15;
+
 #[account]
 #[derive(InitSpace)]
 pub struct FridgeDao {
@@ -12,10 +15,11 @@ pub struct FridgeDao {
     pub vote_period: u64, // duration of voting period (seconds)
     pub vote_cooldown: u64, // time between voting periods (seconds)
     pub next_vote_allowed_at: i64, // absolute timestamp
-    #[max_len(15)]
+    #[max_len(MAX_PROPOSALS)]
     pub proposals: Vec<Pubkey>,
-    #[max_len(20)]
+    #[max_len(MAX_MEMBERS)]
     pub valid_member_addresses: Vec<Pubkey>,
+    pub recent_winner: Pubkey,
 }
 
 impl FridgeDao {
@@ -31,8 +35,6 @@ pub struct Proposal {
     pub proposer: Pubkey,
     #[max_len(50)]
     pub description: String,
-    pub yes_votes: u64,
-    pub no_votes: u64,
     pub bump: u8
 }
 

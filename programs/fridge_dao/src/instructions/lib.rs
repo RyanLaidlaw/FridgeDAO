@@ -10,3 +10,43 @@ pub fn get_voting_end(dao: &Account<state::FridgeDao>) -> Result<i64> {
 
     Ok(voting_end)
 }
+
+fn _sqrt(n: u64) -> u64 {
+    (n as f64).sqrt() as u64
+}
+
+pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'info [AccountInfo<'info>]) -> Result<()> {
+    let mut max_score: u64 = 0;
+    let mut winner: Pubkey = Pubkey::default();
+    let mut ties: Vec<Pubkey> = Vec::new();
+    
+    for proposal_info in remaining_accounts.iter() {
+        let proposal: Account<state::Proposal> = Account::try_from(proposal_info)?;
+        require!(dao.proposals.contains(&proposal.key()), error::Error::InvalidProposal);
+
+        let mut score: u64 = 0;
+        for voter in proposal.voters.iter() {
+            let vote_power = 1000; //TODO get from treasury
+            
+            score = score.checked_add(vote_power).ok_or(error::Error::MathOverflowOrUnderflow)?;
+        }
+
+        if score > max_score {
+            max_score = score;
+            winner = proposal.key();
+        } else if score == max_score {
+            if !ties.contains(&winner) {
+                ties.push(winner);
+            }
+            ties.push(proposal.key());
+        }
+    }
+
+    dao.recent_winner = winner;
+
+    Ok(())
+}
+
+pub fn close_account() -> Result<()> {
+    Ok(())
+}

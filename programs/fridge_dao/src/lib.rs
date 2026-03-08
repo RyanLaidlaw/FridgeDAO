@@ -36,7 +36,7 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn choose_proposal(ctx: Context<Choose>) -> Result<()> {
+    pub fn choose_proposal<'info>(ctx: Context<'_, '_, 'info, 'info, Choose<'info>>) -> Result<()> {
         instructions::choose_proposal(ctx)?;
         Ok(())
     }
@@ -51,13 +51,13 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn add_vald_address(ctx: Context<AddAddress>, new_address: Pubkey) -> Result<()> {
-        instructions::add_valid_address(ctx, new_address)?;
+    pub fn add_valid_addresses(ctx: Context<AddAddress>, new_addresses: Vec<Pubkey>) -> Result<()> {
+        instructions::add_valid_addresses(ctx, new_addresses)?;
         Ok(())
     }
 
-    pub fn remove_vald_address(ctx: Context<RemoveAddress>, address_to_remove: Pubkey) -> Result<()> {
-        instructions::remove_valid_address(ctx, address_to_remove)?;
+    pub fn remove_valid_addresses(ctx: Context<RemoveAddress>, addresses_to_remove: Vec<Pubkey>) -> Result<()> {
+        instructions::remove_valid_addresses(ctx, addresses_to_remove)?;
         Ok(())
     }
 }

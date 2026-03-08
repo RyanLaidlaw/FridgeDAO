@@ -15,13 +15,15 @@ pub struct RemoveAddress<'info> {
     pub fridge_dao: Account<'info, state::FridgeDao>,
 }
 
-pub fn remove_valid_address(ctx: Context<RemoveAddress>, address_to_remove: Pubkey) -> Result<()> {
+pub fn remove_valid_addresses(ctx: Context<RemoveAddress>, addresses_to_remove: Vec<Pubkey>) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
 
     require!(ctx.accounts.remover.key() == dao.authority.key(), error::Error::InvalidAuthority);
-    require!(dao.valid_member_addresses.contains(&address_to_remove), error::Error::AddressDoesNotExist);
+    for addr in addresses_to_remove.iter() {
+        require!(dao.valid_member_addresses.contains(addr), error::Error::AddressDoesNotExist);
+    }
 
-    dao.valid_member_addresses.retain(|x| x != &address_to_remove);
-
+    dao.valid_member_addresses.retain(|x| !addresses_to_remove.contains(x));
+    
     Ok(())
 }

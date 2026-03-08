@@ -26,4 +26,6 @@ pub enum Error {
     AddressAlreadyAdded,
     #[msg("Address does not exist")]
     AddressDoesNotExist,
+    #[msg("At maximum members")]
+    MaxMembers,
 }

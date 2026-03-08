@@ -15,7 +15,7 @@ pub struct Choose<'info> {
     pub fridge_dao: Account<'info, state::FridgeDao>,
 }
 
-pub fn choose_proposal(ctx: Context<Choose>) -> Result<()> {
+pub fn choose_proposal<'info>(ctx: Context<'_, '_, 'info, 'info, Choose<'info>>) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
 
     require!(ctx.accounts.chooser.key() == dao.authority, error::Error::InvalidAuthority);
@@ -25,8 +25,9 @@ pub fn choose_proposal(ctx: Context<Choose>) -> Result<()> {
 
     require!(now > voting_end, error::Error::NotInVotingPeriod);
 
-    // voting power calc
+    lib::compute_winner(dao, ctx.remaining_accounts)?;
 
+    let now = Clock::get()?.unix_timestamp;
     dao.next_vote_allowed_at = now + dao.vote_cooldown as i64;
 
     Ok(())
