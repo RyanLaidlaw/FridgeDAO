@@ -26,8 +26,8 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn vote(ctx: Context<Vote>, proposal_number: u64) -> Result<()> {
-        instructions::vote(ctx, proposal_number)?;
+    pub fn vote(ctx: Context<Vote>, proposal_id: u64) -> Result<()> {
+        instructions::vote(ctx, proposal_id)?;
         Ok(())
     }
 
@@ -41,8 +41,8 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn cancel(ctx: Context<Cancel>) -> Result<()> {
-        instructions::cancel(ctx)?;
+    pub fn cancel_proposal(ctx: Context<Cancel>, proposal_id: u64) -> Result<()> {
+        instructions::cancel_proposal(ctx, proposal_id)?;
         Ok(())
     }
 

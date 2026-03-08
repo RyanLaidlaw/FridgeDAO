@@ -4,13 +4,23 @@ import { assert } from "chai";
 import { FridgeDao } from "../target/types/fridge_dao";
 import { TOKEN_PROGRAM_ID, createMint } from "@solana/spl-token";
 
+
+
 describe("fridge_dao", () => {
 
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
+  const systemProgramId = anchor.web3.SystemProgram.programId;
+
+  const fund = async (acct: anchor.web3.PublicKey) => {
+    const sig = await provider.connection.requestAirdrop(acct, 2 * anchor.web3.LAMPORTS_PER_SOL);
+
+    await provider.connection.confirmTransaction(sig);
+  }
 
   const program = anchor.workspace.fridgeDao as Program<FridgeDao>;
   const authority = provider.wallet;
+  let proposer1: anchor.web3.Keypair;
 
   let fridgeDaoPda: anchor.web3.PublicKey;
   let fridgeDaoBump: number;
@@ -30,6 +40,8 @@ describe("fridge_dao", () => {
   let valid_addrs = Array.from( { length: 5 }, () => anchor.web3.Keypair.generate().publicKey);
 
   before(async () => {
+
+    proposer1 = anchor.web3.Keypair.generate();
 
     [fridgeDaoPda, fridgeDaoBump] =
       anchor.web3.PublicKey.findProgramAddressSync(
@@ -65,7 +77,7 @@ describe("fridge_dao", () => {
         vault: vaultTokenAccount.publicKey,
         usdcMint: usdcMint,
         tokenProgram: TOKEN_PROGRAM_ID,
-        systemProgram: anchor.web3.SystemProgram.programId,
+        systemProgram: systemProgramId,
       })
       .signers([vaultTokenAccount])
       .rpc();
@@ -164,5 +176,70 @@ describe("fridge_dao", () => {
     const dao = await program.account.fridgeDao.fetch(fridgeDaoPda);
 
     assert(!dao.validMemberAddresses.find(a => a.toBase58() === toRemove.toBase58()), "Address still found in the dao");
+  });
+
+  it("Can create proposals", async () => {
+    fund(proposer1.publicKey);
+
+    txn = await program.methods.addValidAddresses([proposer1.publicKey])
+    .accounts({
+      adder: authority.publicKey,
+      fridgeDao: fridgeDaoPda,
+    }).rpc();
+
+    let dao = await program.account.fridgeDao.fetch(fridgeDaoPda);
+
+    const nextProposalId = dao.proposalCount.toNumber() + 1;
+
+    const [proposalPda] = anchor.web3.PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("fridge_prop"),
+        fridgeDaoPda.toBuffer(),
+        new anchor.BN(nextProposalId).toArrayLike(Buffer, "le", 8),
+      ],
+      program.programId
+    );
+
+    txn = await program.methods.propose("Soda").accounts({
+      proposer: proposer1.publicKey,
+      fridgeDao: fridgeDaoPda,
+      proposal: proposalPda,
+      systemProgram: systemProgramId,
+    }).signers([proposer1]).rpc();
+
+    dao = await program.account.fridgeDao.fetch(fridgeDaoPda);
+
+    assert(dao.proposals.find(a => a.toBase58() == proposalPda.toBase58()), "Proposal not found in DAO");
+  });
+
+  it("Can cancel proposals", async () => {
+    let dao = await program.account.fridgeDao.fetch(fridgeDaoPda);
+
+    const lastProposalId = dao.proposalCount.toNumber();
+
+    const [proposalPda] = anchor.web3.PublicKey.findProgramAddressSync(
+      [
+        Buffer.from("fridge_prop"),
+        fridgeDaoPda.toBuffer(),
+        new anchor.BN(lastProposalId).toArrayLike(Buffer, "le", 8),
+      ],
+      program.programId
+    );
+    const proposal = await program.account.proposal.fetch(proposalPda);
+
+    const balanceBefore = await provider.connection.getBalance(proposer1.publicKey);
+
+    txn = await program.methods.cancelProposal(new anchor.BN(1)).accounts({
+      canceller: authority.publicKey,
+      fridgeDao: fridgeDaoPda,
+      proposal: proposalPda,
+      proposer: proposal.proposer,
+    }).rpc()
+
+    const balanceAfter = await provider.connection.getBalance(proposer1.publicKey);
+
+    assert(balanceAfter > balanceBefore, "Rent was not returned to the proposer");
+
+    assert(!dao.proposals.includes(proposalPda), "Proposal still found in DAO");
   });
 });
