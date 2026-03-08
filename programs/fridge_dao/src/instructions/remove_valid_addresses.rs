@@ -18,7 +18,7 @@ pub struct RemoveAddress<'info> {
 pub fn remove_valid_addresses(ctx: Context<RemoveAddress>, addresses_to_remove: Vec<Pubkey>) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
 
-    require!(ctx.accounts.remover.key() == dao.authority.key(), error::Error::InvalidAuthority);
+    require!(ctx.accounts.remover.key() == dao.authority, error::Error::InvalidAuthority);
     for addr in addresses_to_remove.iter() {
         require!(dao.valid_member_addresses.contains(addr), error::Error::AddressDoesNotExist);
     }
