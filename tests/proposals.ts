@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { assert } from "chai";
 import { setup } from "./setup/setup";
-import { fund } from "./helpers/helpers";
+import { fund, createProposal } from "./helpers/helpers";
 
 describe("proposals", () => {
   let proposer1: anchor.web3.Keypair;
@@ -64,24 +64,14 @@ describe("proposals", () => {
 
     let dao = await program.account.fridgeDao.fetch(fridgeDaoPda);
 
-    const lastProposalId = dao.proposalCount.toNumber();
-
-    const [proposalPda] = anchor.web3.PublicKey.findProgramAddressSync(
-      [
-        Buffer.from("fridge_prop"),
-        fridgeDaoPda.toBuffer(),
-        new anchor.BN(lastProposalId).toArrayLike(Buffer, "le", 8),
-      ],
-      program.programId
-    );
-    const proposal = await program.account.proposal.fetch(proposalPda);
+    let [proposal, proposalPda, proposalId]  = await createProposal(dao, program, proposer1, fridgeDaoPda);
 
     const balanceBefore = await provider.connection.getBalance(
       proposer1.publicKey
     );
 
     txn = await program.methods
-      .cancelProposal(new anchor.BN(1))
+      .cancelProposal(new anchor.BN(proposalId))
       .accounts({
         canceller: authority.publicKey,
         fridgeDao: fridgeDaoPda,
@@ -101,4 +91,28 @@ describe("proposals", () => {
     dao = await program.account.fridgeDao.fetch(fridgeDaoPda);
     assert(!dao.proposals.includes(proposalPda), "Proposal still found in DAO");
   });
+
+  it("Non-authority cannot cancel proposals", async () => {
+      const { program, fridgeDaoPda } = ctx;
+
+      let dao = await program.account.fridgeDao.fetch(fridgeDaoPda);
+
+      let [proposal, proposalPda, proposalId] = await createProposal(dao, program, proposer1, fridgeDaoPda);
+
+      try {
+        txn = await program.methods
+        .cancelProposal(new anchor.BN(proposalId))
+        .accounts({
+          canceller: proposer1.publicKey,
+          fridgeDao: fridgeDaoPda,
+          proposal: proposalPda,
+          proposer: proposal.proposer,
+        })
+        .rpc();
+
+        assert.fail("Txn did not revert");
+      } catch (err) {
+        assert.ok(err);
+      }
+   });
 });
