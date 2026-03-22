@@ -32,4 +32,6 @@ pub enum Error {
     DuplicateAddress,
     #[msg("Invalid vault")]
     InvalidVault,
+    #[msg("Invalid mint")]
+    InvalidMint,
 }

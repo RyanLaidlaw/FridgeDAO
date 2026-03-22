@@ -1,4 +1,4 @@
-use anchor_lang::prelude::*;
+use anchor_lang::prelude::{borsh::de, *};
 use anchor_spl::token_interface::{TokenAccount, TokenInterface, Mint, TransferChecked, transfer_checked};
 
 use crate::{error, state};
@@ -21,7 +21,10 @@ pub struct Deposit<'info> {
     )]
     pub vault: InterfaceAccount<'info, TokenAccount>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = user_token_account.owner == depositor.key()
+    )]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
 
     pub usdc_mint: InterfaceAccount<'info, Mint>,
@@ -32,7 +35,8 @@ pub struct Deposit<'info> {
 pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
 
-    require!(dao.valid_member_addresses.iter().any(|user| user.key == ctx.accounts.depositor.key()), error::Error::InvalidMember);
+    require!(ctx.accounts.user_token_account.mint == dao.usdc_mint, error::Error::InvalidMint);
+    require!(dao.valid_member_keys.iter().any(|user| user.key == ctx.accounts.depositor.key()), error::Error::InvalidMember);
 
     let cpi_accounts = TransferChecked {
         from: ctx.accounts.user_token_account.to_account_info(),
@@ -46,13 +50,18 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
         cpi_accounts,
     );
 
-    transfer_checked(cpi_ctx, amount, 6)?; // 6 decimals for USDC
+    transfer_checked(cpi_ctx, amount, state::DECIMALS)?;
 
-    dao.valid_member_addresses.iter_mut().for_each(|user| {
-        if user.key == ctx.accounts.depositor.key() {
-            user.balance += amount;
-        }
-    });
+    let user = dao
+        .valid_member_keys
+        .iter_mut()
+        .find(|user| user.key == ctx.accounts.depositor.key())
+        .ok_or(error::Error::InvalidMember)?;
+
+    user.balance = user
+        .balance
+        .checked_add(amount)
+        .ok_or(error::Error::MathOverflowOrUnderflow)?;
 
     Ok(())
 }

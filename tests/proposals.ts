@@ -20,7 +20,7 @@ describe("proposals", () => {
     await fund(proposer1.publicKey, provider);
 
     txn = await program.methods
-      .addValidAddresses([proposer1.publicKey])
+      .addValidKeys([proposer1.publicKey])
       .accounts({
         adder: authority.publicKey,
         fridgeDao: fridgeDaoPda,

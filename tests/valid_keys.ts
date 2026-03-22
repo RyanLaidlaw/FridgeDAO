@@ -2,23 +2,23 @@ import * as anchor from "@coral-xyz/anchor";
 import { setup } from "./setup/setup";
 import { assert } from "chai";
 
-describe("Valid Addresses", async () => {
-  let valid_addrs: Array<anchor.web3.PublicKey>;
+describe("Valid Keys", async () => {
+  let valid_keys: Array<anchor.web3.PublicKey>;
   let ctx;
   let txn;
 
   beforeEach(async () => {
     ctx = await setup();
-    valid_addrs = Array.from(
+    valid_keys = Array.from(
       { length: 5 },
       () => anchor.web3.Keypair.generate().publicKey
     );
   });
 
-  it("Allows addition of valid addresses", async () => {
+  it("Allows addition of valid keys", async () => {
     const { program, authority, fridgeDaoPda } = ctx;
     txn = await program.methods
-      .addValidAddresses(valid_addrs)
+      .addValidKeys(valid_keys)
       .accounts({
         adder: authority.publicKey,
         fridgeDao: fridgeDaoPda,
@@ -27,20 +27,20 @@ describe("Valid Addresses", async () => {
 
     const dao = await program.account.fridgeDao.fetch(fridgeDaoPda);
 
-    for (let addr of valid_addrs) {
+    for (let key of valid_keys) {
       assert(
-        dao.validMemberAddresses.some((a) => a.toBase58() == addr.toBase58()),
-        "Address not found in the dao"
+        dao.validMemberKeys.some((a) => a.key.toBase58() == key.toBase58()),
+        "Key not found in the dao"
       );
     }
   });
 
-  it("Prevents adding duplicate addresses", async () => {
+  it("Prevents adding duplicate keys", async () => {
     const { program, authority, fridgeDaoPda } = ctx;
 
     try {
       txn = await program.methods
-        .addValidAddresses([valid_addrs[0]])
+        .addValidKeys([valid_keys[0]])
         .accounts({
           adder: authority.publicKey,
           fridgeDao: fridgeDaoPda,
@@ -57,7 +57,7 @@ describe("Valid Addresses", async () => {
     const { program, fridgeDaoPda } = ctx;
     try {
       txn = await program.methods
-        .addValidAddresses([anchor.web3.Keypair.generate().publicKey])
+        .addValidKeys([anchor.web3.Keypair.generate().publicKey])
         .accounts({
           adder: anchor.web3.Keypair.generate().publicKey,
           fridgeDao: fridgeDaoPda,
@@ -75,7 +75,7 @@ describe("Valid Addresses", async () => {
 
     try {
       txn = await program.methods
-        .removeValidAddresses([valid_addrs[0]])
+        .removeValidKeys([valid_keys[0]])
         .accounts({
           adder: anchor.web3.Keypair.generate().publicKey,
           fridgeDao: fridgeDaoPda,
@@ -88,12 +88,12 @@ describe("Valid Addresses", async () => {
     }
   });
 
-  it("Allows for removal of addresses", async () => {
+  it("Allows for removal of keys", async () => {
     const { program, authority, fridgeDaoPda } = ctx;
 
     let toRemove = anchor.web3.Keypair.generate().publicKey;
     txn = await program.methods
-      .addValidAddresses([toRemove])
+      .addValidKeys([toRemove])
       .accounts({
         adder: authority.publicKey,
         fridgeDao: fridgeDaoPda,
@@ -101,7 +101,7 @@ describe("Valid Addresses", async () => {
       .rpc();
 
     txn = await program.methods
-      .removeValidAddresses([toRemove])
+      .removeValidKeys([toRemove])
       .accounts({
         remover: authority.publicKey,
         fridgeDao: fridgeDaoPda,
@@ -111,10 +111,10 @@ describe("Valid Addresses", async () => {
     const dao = await program.account.fridgeDao.fetch(fridgeDaoPda);
 
     assert(
-      !dao.validMemberAddresses.find(
-        (a) => a.toBase58() === toRemove.toBase58()
+      !dao.validMemberKeys.find(
+        (a) => a.key.toBase58() === toRemove.toBase58()
       ),
-      "Address still found in the dao"
+      "Key still found in the dao"
     );
   });
 });

@@ -48,7 +48,7 @@ pub fn vote(ctx: Context<Vote>, proposal_id: u64) -> Result<()> {
     let vote = &mut ctx.accounts.vote;
     let proposal = &mut ctx.accounts.proposal;
 
-    require!(dao.valid_member_addresses.iter().any(|user| user.key == voter.key()), error::Error::InvalidMember);
+    require!(dao.valid_member_keys.iter().any(|user| user.key == voter.key()), error::Error::InvalidMember);
 
     let now = Clock::get()?.unix_timestamp;
     let voting_end = lib::get_voting_end(&dao)?;

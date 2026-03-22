@@ -7,8 +7,8 @@ mod propose;
 mod choose_proposal;
 mod cancel_proposal;
 mod update_vote_cooldown;
-mod add_valid_addresses;
-mod remove_valid_addresses;
+mod add_valid_keys;
+mod remove_valid_keys;
 
 pub use init::*;
 pub use deposit::*;
@@ -18,5 +18,5 @@ pub use propose::*;
 pub use choose_proposal::*;
 pub use cancel_proposal::*;
 pub use update_vote_cooldown::*;
-pub use add_valid_addresses::*;
-pub use remove_valid_addresses::*;
+pub use add_valid_keys::*;
+pub use remove_valid_keys::*;

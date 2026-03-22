@@ -36,7 +36,7 @@ pub fn propose(ctx: Context<Propose>, description: String) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
     let proposal = &mut ctx.accounts.proposal;
 
-    require!(dao.valid_member_addresses.iter().any(|user| user.key == ctx.accounts.proposer.key()), error::Error::InvalidMember);
+    require!(dao.valid_member_keys.iter().any(|user| user.key == ctx.accounts.proposer.key()), error::Error::InvalidMember);
     
     dao.proposal_count += 1;
 

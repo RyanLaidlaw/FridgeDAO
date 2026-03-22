@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use crate::{error, state};
 
 #[derive(Accounts)]
-pub struct RemoveAddress<'info> {
+pub struct RemoveKeys<'info> {
     #[account(mut)]
     pub remover: Signer<'info>,
 
@@ -15,16 +15,16 @@ pub struct RemoveAddress<'info> {
     pub fridge_dao: Account<'info, state::FridgeDao>,
 }
 
-pub fn remove_valid_addresses(ctx: Context<RemoveAddress>, addresses_to_remove: Vec<Pubkey>) -> Result<()> {
+pub fn remove_valid_keys(ctx: Context<RemoveKeys>, keys_to_remove: Vec<Pubkey>) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
 
     require!(ctx.accounts.remover.key() == dao.authority, error::Error::InvalidAuthority);
 
-    for addr in &addresses_to_remove {
-        require!(dao.valid_member_addresses.iter().any(|user| user.key == *addr), error::Error::AddressDoesNotExist);
+    for k in &keys_to_remove {
+        require!(dao.valid_member_keys.iter().any(|user| user.key == *k), error::Error::AddressDoesNotExist);
     }
 
-    dao.valid_member_addresses.retain(|x| !addresses_to_remove.contains(&x.key));
+    dao.valid_member_keys.retain(|x| !keys_to_remove.contains(&x.key));
     
     Ok(())
 }

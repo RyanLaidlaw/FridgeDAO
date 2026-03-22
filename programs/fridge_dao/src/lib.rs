@@ -21,8 +21,8 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn withdraw(ctx: Context<Withdraw>) -> Result<()> {
-        instructions::withdraw(ctx)?;
+    pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
+        instructions::withdraw(ctx, amount)?;
         Ok(())
     }
 
@@ -51,13 +51,13 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn add_valid_addresses(ctx: Context<AddAddress>, new_addresses: Vec<Pubkey>) -> Result<()> {
-        instructions::add_valid_addresses(ctx, new_addresses)?;
+    pub fn add_valid_keys(ctx: Context<AddKeys>, new_keys: Vec<Pubkey>) -> Result<()> {
+        instructions::add_valid_keys(ctx, new_keys)?;
         Ok(())
     }
 
-    pub fn remove_valid_addresses(ctx: Context<RemoveAddress>, addresses_to_remove: Vec<Pubkey>) -> Result<()> {
-        instructions::remove_valid_addresses(ctx, addresses_to_remove)?;
+    pub fn remove_valid_keys(ctx: Context<RemoveKeys>, keys_to_remove: Vec<Pubkey>) -> Result<()> {
+        instructions::remove_valid_keys(ctx, keys_to_remove)?;
         Ok(())
     }
 }
