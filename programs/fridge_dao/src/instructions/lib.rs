@@ -25,10 +25,9 @@ pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'i
         require!(dao.proposals.contains(&proposal.key()), error::Error::InvalidProposal);
 
         let mut score: u64 = 0;
-        for voter in proposal.voters.iter() {
-            let vote_power = 1000; //TODO get from treasury
-            
-            score = score.checked_add(vote_power).ok_or(error::Error::MathOverflowOrUnderflow)?;
+        for voter in &proposal.voters {
+            let user = dao.valid_member_addresses.iter().find(|user| user.key == voter.key()).ok_or(error::Error::InvalidMember)?;
+            score = score.checked_add(_sqrt(user.balance)).ok_or(error::Error::MathOverflowOrUnderflow)?;
         }
 
         if score > max_score {

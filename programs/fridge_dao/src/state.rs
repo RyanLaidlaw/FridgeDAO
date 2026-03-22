@@ -2,6 +2,12 @@ use anchor_lang::prelude::*;
 
 pub const MAX_MEMBERS: usize = 20;
 pub const MAX_PROPOSALS: usize = 15;
+#[account]
+#[derive(InitSpace)]
+pub struct User {
+    pub key: Pubkey,
+    pub balance: u64,
+}
 
 #[account]
 #[derive(InitSpace)]
@@ -18,7 +24,7 @@ pub struct FridgeDao {
     #[max_len(MAX_PROPOSALS)]
     pub proposals: Vec<Pubkey>,
     #[max_len(MAX_MEMBERS)]
-    pub valid_member_addresses: Vec<Pubkey>,
+    pub valid_member_addresses: Vec<User>,
     pub recent_winner: Pubkey,
 }
 

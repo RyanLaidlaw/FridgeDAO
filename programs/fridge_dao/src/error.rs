@@ -30,4 +30,6 @@ pub enum Error {
     MaxMembers,
     #[msg("Duplicate Address")]
     DuplicateAddress,
+    #[msg("Invalid vault")]
+    InvalidVault,
 }

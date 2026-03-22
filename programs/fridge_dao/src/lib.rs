@@ -16,8 +16,8 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn deposit(ctx: Context<Deposit>) -> Result<()> {
-        instructions::deposit(ctx)?;
+    pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
+        instructions::deposit(ctx, amount)?;
         Ok(())
     }
 

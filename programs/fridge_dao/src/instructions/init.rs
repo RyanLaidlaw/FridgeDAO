@@ -53,7 +53,12 @@ pub fn initialize(ctx: Context<InitDAO>, vote_period_len: u64, time_until_first_
     dao.next_vote_allowed_at = next_vote_time;
     dao.vote_cooldown = 1_209_600; // two weeks (can be updated)
     dao.proposals = Vec::new();
-    dao.valid_member_addresses = vec![ctx.accounts.authority.key()];
+    
+    dao.valid_member_addresses = vec![
+        state::User {
+        key: ctx.accounts.authority.key(), 
+        balance: 0,
+    }];
 
     Ok(())
 }
