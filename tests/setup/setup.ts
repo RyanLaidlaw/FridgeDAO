@@ -17,7 +17,6 @@ export async function setup() {
   let vaultAuthBump: number;
 
   let usdcMint: anchor.web3.PublicKey;
-  let vaultTokenAccount: anchor.web3.Keypair;
 
   let votingPeriod = 1000;
   let timeUntilStart = 100;
@@ -43,7 +42,7 @@ export async function setup() {
     6
   );
 
-  vaultTokenAccount = anchor.web3.Keypair.generate();
+  let vault: anchor.web3.PublicKey;
 
   const slot = await provider.connection.getSlot();
   blockTime = await provider.connection.getBlockTime(slot);
@@ -51,6 +50,7 @@ export async function setup() {
   const acct = await provider.connection.getAccountInfo(fridgeDaoPda);
 
   if (!acct) {
+    const vaultTokenAccount = anchor.web3.Keypair.generate();
     txn = await program.methods
       .initialize(new anchor.BN(votingPeriod), new anchor.BN(timeUntilStart))
       .accounts({
@@ -64,6 +64,11 @@ export async function setup() {
       })
       .signers([vaultTokenAccount])
       .rpc();
+
+      vault = vaultTokenAccount.publicKey;
+  } else {
+    const dao = await program.account.fridgeDao.fetch(fridgeDaoPda);
+    vault = dao.vault;
   }
 
   return {
@@ -73,7 +78,7 @@ export async function setup() {
     usdcMint,
     fridgeDaoPda,
     fridgeDaoBump,
-    vaultTokenAccount,
+    vault,
     vaultAuthPda,
     vaultAuthBump,
     blockTime,

@@ -1,6 +1,8 @@
 import * as anchor from "@coral-xyz/anchor";
 import { setup } from "./setup/setup";
 import { assert } from "chai";
+import { expectAnchorError } from "./helpers/helpers";
+import { getAssociatedTokenAddress, createAssociatedTokenAccount } from "@solana/spl-token";
 
 describe("Valid Keys", async () => {
   let valid_keys: Array<anchor.web3.PublicKey>;
@@ -35,61 +37,71 @@ describe("Valid Keys", async () => {
     }
   });
 
-  it("Prevents adding duplicate keys", async () => {
+  it("Prevents adding existing keys", async () => {
     const { program, authority, fridgeDaoPda } = ctx;
 
-    try {
-      txn = await program.methods
+    await program.methods
+      .addValidKeys([valid_keys[0]])
+      .accounts({
+        adder: authority.publicKey,
+        fridgeDao: fridgeDaoPda,
+      })
+      .rpc();
+
+    await expectAnchorError(
+      program.methods
         .addValidKeys([valid_keys[0]])
         .accounts({
           adder: authority.publicKey,
           fridgeDao: fridgeDaoPda,
         })
-        .rpc();
-
-      assert.fail("Txn did not revert");
-    } catch (err) {
-      assert.ok(err);
-    }
+        .rpc(),
+        "KeyAlreadyAdded"
+    );
   });
 
   it("Prevents non-authority people from adding", async () => {
     const { program, fridgeDaoPda } = ctx;
-    try {
-      txn = await program.methods
+
+    const fake = anchor.web3.Keypair.generate();
+
+    await expectAnchorError(
+      program.methods
         .addValidKeys([anchor.web3.Keypair.generate().publicKey])
         .accounts({
-          adder: anchor.web3.Keypair.generate().publicKey,
+          adder: fake.publicKey,
           fridgeDao: fridgeDaoPda,
         })
-        .rpc();
-
-      assert.fail("Txn did not revert");
-    } catch (err) {
-      assert.ok(err);
-    }
+        .signers([fake])
+        .rpc(),
+        "InvalidAuthority"
+    );
   });
 
   it("Prevents non-authority people from removing", async () => {
-    const { program, fridgeDaoPda } = ctx;
+    const { program, fridgeDaoPda, usdcMint, vaultAuthPda, vault } = ctx;
 
-    try {
-      txn = await program.methods
+    const fake = anchor.web3.Keypair.generate();
+
+    await expectAnchorError(
+      program.methods
         .removeValidKeys([valid_keys[0]])
         .accounts({
-          adder: anchor.web3.Keypair.generate().publicKey,
+          remover: fake.publicKey,
           fridgeDao: fridgeDaoPda,
+          vaultAuthority: vaultAuthPda,
+          vault: vault,
+          usdcMint: usdcMint,
+          tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
         })
-        .rpc();
-
-      assert.fail("Txn did not revert");
-    } catch (err) {
-      assert.ok(err);
-    }
+        .signers([fake])
+        .rpc(),
+        "InvalidAuthority"
+    );
   });
 
   it("Allows for removal of keys", async () => {
-    const { program, authority, fridgeDaoPda } = ctx;
+    const { provider, program, authority, fridgeDaoPda, usdcMint, vaultAuthPda, vault } = ctx;
 
     let toRemove = anchor.web3.Keypair.generate().publicKey;
     txn = await program.methods
@@ -99,13 +111,36 @@ describe("Valid Keys", async () => {
         fridgeDao: fridgeDaoPda,
       })
       .rpc();
+    
+    const userAta = await getAssociatedTokenAddress(
+      usdcMint,
+      toRemove
+    );
+
+    await createAssociatedTokenAccount(
+      provider.connection,
+      authority.payer,
+      usdcMint,
+      toRemove
+    );
 
     txn = await program.methods
       .removeValidKeys([toRemove])
       .accounts({
         remover: authority.publicKey,
         fridgeDao: fridgeDaoPda,
+        vaultAuthority: vaultAuthPda,
+        vault: vault,
+        usdcMint: usdcMint,
+        tokenProgram: anchor.utils.token.TOKEN_PROGRAM_ID,
       })
+      .remainingAccounts([
+        {
+          pubkey: userAta,
+          isWritable: true,
+          isSigner: false,
+        },
+      ])
       .rpc();
 
     const dao = await program.account.fridgeDao.fetch(fridgeDaoPda);

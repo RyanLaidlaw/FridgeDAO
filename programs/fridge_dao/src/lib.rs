@@ -56,7 +56,7 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn remove_valid_keys(ctx: Context<RemoveKeys>, keys_to_remove: Vec<Pubkey>) -> Result<()> {
+    pub fn remove_valid_keys<'info>(ctx: Context<'_, '_, 'info, 'info, RemoveKeys<'info>>, keys_to_remove: Vec<Pubkey>) -> Result<()> {
         instructions::remove_valid_keys(ctx, keys_to_remove)?;
         Ok(())
     }

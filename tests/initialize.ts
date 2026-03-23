@@ -15,7 +15,7 @@ describe("initializaton", async () => {
       usdcMint,
       fridgeDaoPda,
       fridgeDaoBump,
-      vaultTokenAccount,
+      vault,
       vaultAuthBump,
       blockTime,
       votingPeriod,
@@ -32,7 +32,7 @@ describe("initializaton", async () => {
 
     assert.equal(
       dao.vault.toBase58(),
-      vaultTokenAccount.publicKey.toBase58(),
+      vault.toBase58(),
       "Treasuries not equal"
     );
 

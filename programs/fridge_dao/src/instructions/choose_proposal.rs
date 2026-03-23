@@ -15,7 +15,7 @@ pub struct Choose<'info> {
     pub fridge_dao: Account<'info, state::FridgeDao>,
 }
 
-pub fn choose_proposal<'info>(ctx: Context<'_, '_, 'info, 'info, Choose<'info>>) -> Result<()> {
+pub fn choose_proposal<'info>(ctx: Context<'_, '_, 'info, 'info, Choose<'info>>) -> Result<()> { // TODO this must actually remove balance from everyone from the vault
     let dao = &mut ctx.accounts.fridge_dao;
 
     require!(ctx.accounts.chooser.key() == dao.authority, error::Error::InvalidAuthority);
