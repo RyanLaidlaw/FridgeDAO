@@ -27,6 +27,9 @@ pub struct Deposit<'info> {
     )]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
 
+    #[account(
+        constraint = usdc_mint.key() == fridge_dao.usdc_mint @ error::Error::InvalidMint
+    )]
     pub usdc_mint: InterfaceAccount<'info, Mint>,
 
     pub token_program: Interface<'info, TokenInterface>,
@@ -35,7 +38,6 @@ pub struct Deposit<'info> {
 pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
 
-    require!(ctx.accounts.user_token_account.mint == dao.usdc_mint, error::Error::InvalidMint);
     require!(dao.valid_member_keys.iter().any(|user| user.key == ctx.accounts.depositor.key()), error::Error::InvalidMember);
 
     let cpi_accounts = TransferChecked {

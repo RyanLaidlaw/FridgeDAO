@@ -69,6 +69,7 @@ export async function setup() {
   } else {
     const dao = await program.account.fridgeDao.fetch(fridgeDaoPda);
     vault = dao.vault;
+    usdcMint = dao.usdcMint;
   }
 
   return {

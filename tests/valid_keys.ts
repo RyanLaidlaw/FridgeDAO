@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { setup } from "./setup/setup";
 import { assert } from "chai";
-import { expectAnchorError } from "./helpers/helpers";
+import { expectAnchorError, createATA } from "./helpers/helpers";
 import { getAssociatedTokenAddress, createAssociatedTokenAccount } from "@solana/spl-token";
 
 describe("Valid Keys", async () => {
@@ -112,17 +112,7 @@ describe("Valid Keys", async () => {
       })
       .rpc();
     
-    const userAta = await getAssociatedTokenAddress(
-      usdcMint,
-      toRemove
-    );
-
-    await createAssociatedTokenAccount(
-      provider.connection,
-      authority.payer,
-      usdcMint,
-      toRemove
-    );
+    const userAta = await createATA(toRemove, provider, usdcMint, authority);
 
     txn = await program.methods
       .removeValidKeys([toRemove])

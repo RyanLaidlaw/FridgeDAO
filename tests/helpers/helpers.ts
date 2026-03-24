@@ -1,11 +1,10 @@
 import * as anchor from "@coral-xyz/anchor";
 import { FridgeDao } from "../../target/types/fridge_dao";
 import { assert } from "chai";
+import { getOrCreateAssociatedTokenAccount, createAssociatedTokenAccount } from "@solana/spl-token";
 
 export async function fund(acct: anchor.web3.PublicKey, provider: anchor.AnchorProvider) {
-    const sig = await provider.connection.requestAirdrop(acct, 2 * anchor.web3.LAMPORTS_PER_SOL);
-
-    await provider.connection.confirmTransaction(sig);
+  await provider.connection.requestAirdrop(acct, 2 * anchor.web3.LAMPORTS_PER_SOL);
 }
 
 export async function createProposal(dao, program: anchor.Program<FridgeDao>, proposer, fridgeDaoPda) {
@@ -43,4 +42,16 @@ export async function expectAnchorError(promise: Promise<any>, code: string) {
   } catch (err: any) {
     assert.equal(err.error.errorCode.code, code);
   }
+}
+
+export async function createATA(user, provider, usdcMint, authority) {
+
+  const userAta = await getOrCreateAssociatedTokenAccount(
+    provider.connection,
+    authority.payer,
+    usdcMint,
+    user
+  );
+
+  return userAta.address;
 }
