@@ -41,8 +41,8 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn cancel_proposal(ctx: Context<Cancel>, proposal_id: u64) -> Result<()> {
-        instructions::cancel_proposal(ctx, proposal_id)?;
+    pub fn cancel_proposal(ctx: Context<Cancel>, _proposal_id: u64) -> Result<()> {
+        instructions::cancel_proposal(ctx)?;
         Ok(())
     }
 
@@ -51,13 +51,13 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn add_valid_keys(ctx: Context<AddKeys>, new_keys: Vec<Pubkey>) -> Result<()> {
-        instructions::add_valid_keys(ctx, new_keys)?;
+    pub fn whitelist(ctx: Context<DAOWhitelist>, new_keys: Vec<Pubkey>, token_account_amounts: Vec<u64>) -> Result<()> {
+        instructions::whitelist_keys(ctx, new_keys, token_account_amounts)?;
         Ok(())
     }
 
-    pub fn remove_valid_keys<'info>(ctx: Context<'_, '_, 'info, 'info, RemoveKeys<'info>>, keys_to_remove: Vec<Pubkey>) -> Result<()> {
-        instructions::remove_valid_keys(ctx, keys_to_remove)?;
+    pub fn blacklist<'info>(ctx: Context<DAOBlacklist>, keys_to_remove: Vec<Pubkey>) -> Result<()> {
+        instructions::blacklist_keys(ctx, keys_to_remove)?;
         Ok(())
     }
 }

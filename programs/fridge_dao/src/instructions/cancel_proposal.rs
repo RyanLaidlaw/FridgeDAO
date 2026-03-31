@@ -33,11 +33,14 @@ pub struct Cancel<'info> {
     pub proposer: UncheckedAccount<'info>,
 }
 
-pub fn cancel_proposal(ctx: Context<Cancel>, proposal_id: u64) -> Result<()> {
+pub fn cancel_proposal(ctx: Context<Cancel>) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
     let proposal = &mut ctx.accounts.proposal;
 
-    require!(ctx.accounts.canceller.key() == dao.authority, error::Error::InvalidAuthority);
+    let is_admin = ctx.accounts.canceller.key() == dao.mint_admin_program;
+    let is_proposer = ctx.accounts.canceller.key() == proposal.proposer;
+
+    require!(is_admin || is_proposer, error::Error::InvalidAuthority);
 
     dao.proposals.retain(|x|  *x != proposal.key());
 

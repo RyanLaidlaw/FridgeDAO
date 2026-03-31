@@ -6,6 +6,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
+dao_mint = "4iLCBjB3g5uEzAjepzCBfNACuxrLfxKM1JvT8GV5xzmd"
 fridge_dao = "3Mtgqr9jRqBMAbp9kTde56EWvGhJk744vSqiv9eJmX7q"
 
 [registry]

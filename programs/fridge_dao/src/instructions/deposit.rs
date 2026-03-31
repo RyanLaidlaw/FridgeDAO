@@ -1,12 +1,11 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{TokenAccount, TokenInterface, Mint, TransferChecked, transfer_checked};
 
 use crate::{error, state};
 
 #[derive(Accounts)]
 pub struct Deposit<'info> {
     #[account(mut)]
-    pub depositor: Signer<'info>,
+    pub signer: Signer<'info>,
 
     #[account(
         mut,
@@ -15,49 +14,19 @@ pub struct Deposit<'info> {
     )]
     pub fridge_dao: Account<'info, state::FridgeDao>,
 
-    #[account(
-        mut,
-        constraint = vault.key() == fridge_dao.vault @ error::Error::InvalidVault
-    )]
-    pub vault: InterfaceAccount<'info, TokenAccount>,
-
-    #[account(
-        mut,
-        constraint = user_token_account.owner == depositor.key()
-    )]
-    pub user_token_account: InterfaceAccount<'info, TokenAccount>,
-
-    #[account(
-        constraint = usdc_mint.key() == fridge_dao.usdc_mint @ error::Error::InvalidMint
-    )]
-    pub usdc_mint: InterfaceAccount<'info, Mint>,
-
-    pub token_program: Interface<'info, TokenInterface>,
+    /// CHECK: Pubkey is used only for user lookup in fridge_dao. No data is read from the account
+    pub user: UncheckedAccount<'info>,
 }
 
 pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
 
-    require!(dao.valid_member_keys.iter().any(|user| user.key == ctx.accounts.depositor.key()), error::Error::InvalidMember);
-
-    let cpi_accounts = TransferChecked {
-        from: ctx.accounts.user_token_account.to_account_info(),
-        to: ctx.accounts.vault.to_account_info(),
-        authority: ctx.accounts.depositor.to_account_info(),
-        mint: ctx.accounts.usdc_mint.to_account_info(),
-    };
-
-    let cpi_ctx = CpiContext::new(
-        ctx.accounts.token_program.to_account_info(),
-        cpi_accounts,
-    );
-
-    transfer_checked(cpi_ctx, amount, state::DECIMALS)?;
+    require!(ctx.accounts.signer.key() == dao.mint_admin_program, error::Error::InvalidAuthority);
 
     let user = dao
         .valid_member_keys
         .iter_mut()
-        .find(|user| user.key == ctx.accounts.depositor.key())
+        .find(|user| user.key == ctx.accounts.user.key())
         .ok_or(error::Error::InvalidMember)?;
 
     user.balance = user

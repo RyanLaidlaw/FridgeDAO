@@ -620,6 +620,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "dao_mint"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "fridge_dao",
+]
+
+[[package]]
 name = "derivation-path"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

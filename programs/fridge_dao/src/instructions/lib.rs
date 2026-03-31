@@ -15,7 +15,7 @@ fn _sqrt(n: u64) -> u64 {
     (n as f64).sqrt() as u64
 }
 
-pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'info [AccountInfo<'info>]) -> Result<()> {
+pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'info [AccountInfo<'info>], vault_balance: u64) -> Result<()> {
     let mut max_score: u64 = 0;
     let mut winner: Pubkey = Pubkey::default();
     let mut ties: Vec<Pubkey> = Vec::new();
@@ -26,7 +26,10 @@ pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'i
 
         let mut score: u64 = 0;
         for voter in &proposal.voters {
-            let user = dao.valid_member_keys.iter().find(|user| user.key == voter.key()).ok_or(error::Error::InvalidMember)?;
+            let user = dao.valid_member_keys.iter()
+                .find(|user| user.key == voter.key())
+                .ok_or(error::Error::InvalidMember)?;
+
             score = score.checked_add(_sqrt(user.balance)).ok_or(error::Error::MathOverflowOrUnderflow)?;
         }
 
@@ -41,11 +44,25 @@ pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'i
         }
     }
 
+    if ties.len() > 0 {
+        emit!(state::Tie {
+            score: max_score,
+            winners: ties,
+        });
+        return Ok(());
+    } // TODO resolve ties
+
+    let remaining = vault_balance.checked_sub(max_score).ok_or(error::Error::MathOverflowOrUnderflow)?;
+
+    for user in dao.valid_member_keys.iter_mut() {
+        user.balance = user.balance
+            .checked_mul(remaining)
+            .ok_or(error::Error::MathOverflowOrUnderflow)?
+            .checked_div(vault_balance)
+            .ok_or(error::Error::MathOverflowOrUnderflow)?;
+    }
+
     dao.recent_winner = winner;
 
-    Ok(())
-}
-
-pub fn close_account() -> Result<()> {
     Ok(())
 }

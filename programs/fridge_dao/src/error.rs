@@ -40,4 +40,6 @@ pub enum Error {
     InvalidTokenAccountOwner,
     #[msg("Token account does not match ")]
     InvalidTokenAccount,
+    #[msg("Invalid amount")]
+    InvalidAmount,
 }
