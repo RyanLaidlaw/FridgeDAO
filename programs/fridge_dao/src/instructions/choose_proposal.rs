@@ -29,7 +29,7 @@ pub struct Choose<'info> {
 pub fn choose_proposal<'info>(ctx: Context<'_, '_, 'info, 'info, Choose<'info>>) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
 
-    require!(ctx.accounts.chooser.key() == dao.mint_admin_program, error::Error::InvalidAuthority);
+    require!(ctx.accounts.chooser.key() == dao.admin, error::Error::InvalidAuthority);
 
     let expected_ata = get_associated_token_address(&ctx.accounts.chooser.key(), &ctx.accounts.usdc_mint.key());
     require!(ctx.accounts.admin_token_account.key() == expected_ata, error::Error::InvalidTokenAccount);

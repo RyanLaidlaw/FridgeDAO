@@ -21,6 +21,7 @@ pub struct UserWithBalance {
 #[derive(InitSpace)]
 pub struct FridgeDao {
     pub mint_admin_program: Pubkey,
+    pub admin: Pubkey,
     pub bump: u8,
     pub proposal_count: u64,
     pub vote_period: u64, // duration of voting period (seconds)

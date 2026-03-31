@@ -18,7 +18,7 @@ pub struct UpdateCooldown<'info> {
 pub fn update_vote_cooldown(ctx: Context<UpdateCooldown>, new_cooldown: u64) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
     
-    require!(ctx.accounts.updater.key() == dao.mint_admin_program, error::Error::InvalidAuthority);
+    require!(ctx.accounts.updater.key() == dao.admin, error::Error::InvalidAuthority);
     require!(new_cooldown != dao.vote_cooldown, error::Error::IdenticalCooldown);
 
     dao.vote_cooldown = new_cooldown;

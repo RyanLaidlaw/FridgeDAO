@@ -45,9 +45,7 @@ pub struct InitMint<'info> {
 }
 
 pub fn init_mint(ctx: Context<InitMint>, vote_period_len: u64, time_until_first_vote: u64) -> Result<()> {
-    require!(!ctx.accounts.dao_mint.initialized, error::Error::AlreadyInitialized);
-    
-    let expected_ata = get_associated_token_address(ctx.accounts.admin.key, &ctx.accounts.dao_mint.usdc_mint);
+    let expected_ata = get_associated_token_address(&ctx.accounts.admin.key(), &ctx.accounts.usdc_mint.key());
     require!(ctx.accounts.admin_token_account.key() == expected_ata, error::Error::InvalidTokenAccount);
 
     {
@@ -55,7 +53,6 @@ pub fn init_mint(ctx: Context<InitMint>, vote_period_len: u64, time_until_first_
         let admin = &ctx.accounts.admin;
 
         dao_mint.admin = admin.key();
-        dao_mint.initialized = true;
         dao_mint.vault = ctx.accounts.vault.key();
         dao_mint.usdc_mint = ctx.accounts.usdc_mint.key();
         dao_mint.dao_program = ctx.accounts.dao_program.key();
@@ -78,7 +75,9 @@ pub fn init_mint(ctx: Context<InitMint>, vote_period_len: u64, time_until_first_
         ctx.accounts.dao_program.to_account_info(),
         fridge_dao::cpi::accounts::InitDAO {
             dao_mint: ctx.accounts.dao_mint.to_account_info(),
+            admin: ctx.accounts.admin.to_account_info(),
             fridge_dao: ctx.accounts.fridge_dao.to_account_info(),
+            admin_token_account: ctx.accounts.admin_token_account.to_account_info(),
             system_program: ctx.accounts.system_program.to_account_info(),
         },
         signer_seeds,

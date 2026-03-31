@@ -37,7 +37,7 @@ pub fn cancel_proposal(ctx: Context<Cancel>) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
     let proposal = &mut ctx.accounts.proposal;
 
-    let is_admin = ctx.accounts.canceller.key() == dao.mint_admin_program;
+    let is_admin = ctx.accounts.canceller.key() == dao.admin;
     let is_proposer = ctx.accounts.canceller.key() == proposal.proposer;
 
     require!(is_admin || is_proposer, error::Error::InvalidAuthority);

@@ -13,7 +13,6 @@ pub struct UserWithTokenAcct {
 #[account]
 #[derive(InitSpace)]
 pub struct DAOMint {
-    pub initialized: bool,
     pub admin: Pubkey,
     pub vault: Pubkey,
     pub usdc_mint: Pubkey,
