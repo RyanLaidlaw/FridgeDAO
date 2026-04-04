@@ -11,6 +11,7 @@ pub struct BlacklistKeys<'info> {
     pub adder: Signer<'info>,
 
     #[account(
+        mut,
         seeds = [state::DAOMint::SEED_PREFIX,],
         bump,
     )]

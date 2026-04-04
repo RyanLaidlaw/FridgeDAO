@@ -12,7 +12,6 @@ describe("initialization", async () => {
         const dao_mint = await daoMintProgram.account.daoMint.fetch(daoMintPda);
         const fridgeDao = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);
 
-
         assert.equal(
             dao_mint.admin.toBase58(),
             authority.publicKey.toBase58(),
