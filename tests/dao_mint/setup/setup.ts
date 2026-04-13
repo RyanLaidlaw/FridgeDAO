@@ -94,6 +94,7 @@ export async function setup() {
         daoMintPda,
         fridgeDaoPda,
         vault,
+        tokenProgram: TOKEN_PROGRAM_ID,
         adminTokenAccount: adminTokenAccount.address,
     };
 }

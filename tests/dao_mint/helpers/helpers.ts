@@ -1,16 +1,22 @@
 import { assert } from "chai";
 import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
+import { AnchorProvider } from "@coral-xyz/anchor";
+import { PublicKey } from "@solana/web3.js";
 
 export async function expectAnchorError(promise: Promise<any>, code: string) {
   try {
     await promise;
     assert.fail("Expected error but transaction succeeded");
   } catch (err: any) {
+    if (!err.error) {
+      console.log("Not an AnchorError:", err.message);
+      throw err;
+    }
     assert.equal(err.error.errorCode.code, code);
   }
 }
 
-export async function createATA(user, provider, usdcMint, authority) {
+export async function createATA(user: PublicKey, provider: AnchorProvider, usdcMint: PublicKey, authority) {
 
   const userAta = await getOrCreateAssociatedTokenAccount(
     provider.connection,

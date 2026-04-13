@@ -8,7 +8,7 @@ use crate::{error, state};
 #[derive(Accounts)]
 pub struct BlacklistKeys<'info> {
     #[account(mut)]
-    pub adder: Signer<'info>,
+    pub remover: Signer<'info>,
 
     #[account(
         mut,
@@ -36,6 +36,7 @@ pub struct BlacklistKeys<'info> {
 
 pub fn blacklist_keys<'info>(ctx: Context<'_, '_, '_, 'info , BlacklistKeys<'info>>, keys_to_blacklist: Vec<Pubkey>) -> Result<()> {
     require!(ctx.remaining_accounts.len() == keys_to_blacklist.len(), error::Error::MismatchingRemainingAccountsLength);
+    require!(ctx.accounts.remover.key() == ctx.accounts.dao_mint.admin, error::Error::InvalidAuthority);
 
     let mut seen: HashSet<Pubkey> = HashSet::new();
 

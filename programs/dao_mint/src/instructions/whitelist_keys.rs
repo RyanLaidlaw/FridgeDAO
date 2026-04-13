@@ -28,7 +28,7 @@ pub fn whitelist_keys(ctx: Context<WhitelistKeys>, new_keys: Vec<Pubkey>) -> Res
     let dao_mint = &mut ctx.accounts.dao_mint;
     let remaining = ctx.remaining_accounts;
 
-    require!(remaining.len() == new_keys.len(), error::Error::InvalidAccounts);
+    require!(remaining.len() == new_keys.len(), error::Error::MismatchingRemainingAccountsLength);
     require!(dao_mint.valid_member_keys.len() + new_keys.len() <= state::MAX_MEMBERS, error::Error::MaxMembers);
     require!(ctx.accounts.adder.key() == dao_mint.admin, error::Error::InvalidAuthority);
 
