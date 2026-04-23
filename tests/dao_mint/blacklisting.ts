@@ -1,7 +1,7 @@
 import { setup } from "./setup/setup";
 import { expectAnchorError, createATA } from "./helpers/helpers";
 import { assert } from "chai";
-import { Keypair, PublicKey } from "@solana/web3.js";
+import { Keypair } from "@solana/web3.js";
 
 describe("blacklisting", async () => {
     let ctx;

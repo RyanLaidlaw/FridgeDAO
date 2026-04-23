@@ -4,8 +4,8 @@ use anchor_spl::token_interface::{TransferChecked, transfer_checked};
 use crate::state;
 
 pub fn transfer<'info>(
-    to: AccountInfo<'info>,
     from: AccountInfo<'info>,
+    to: AccountInfo<'info>,
     authority: AccountInfo<'info>,
     mint: AccountInfo<'info>,
     program: AccountInfo<'info>,

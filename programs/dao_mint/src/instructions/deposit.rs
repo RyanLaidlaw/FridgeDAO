@@ -9,6 +9,7 @@ pub struct Deposit<'info> {
     pub depositor: Signer<'info>,
 
     #[account(
+        mut,
         seeds = [state::DAOMint::SEED_PREFIX,],
         bump,
     )]
@@ -41,9 +42,9 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     require!(ctx.accounts.dao_mint.valid_member_keys.iter().any(|user| user.key == ctx.accounts.depositor.key()), error::Error::InvalidMember);
 
     lib::transfer(
-        ctx.accounts.vault.to_account_info(),
         ctx.accounts.user_token_account.to_account_info(),
-        ctx.accounts.dao_mint.to_account_info(),
+        ctx.accounts.vault.to_account_info(),
+        ctx.accounts.depositor.to_account_info(),
         ctx.accounts.usdc_mint.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
         amount

@@ -51,7 +51,7 @@ pub fn blacklist_keys<'info>(ctx: Context<'_, '_, '_, 'info , BlacklistKeys<'inf
 
         require!(ctx.accounts.dao_mint.valid_member_keys.iter().any(|user| user.key == *k), error::Error::KeyDoesNotExist);
         
-        let acct = &ctx.remaining_accounts[i];
+        let acct = &ctx.remaining_accounts[i]; //TODO what if the account is removed, funds are locked, should send to admin
         let token_acct = TokenAccount::try_deserialize(&mut acct.try_borrow_data()?.as_ref())?;
 
         require!(token_acct.owner == *k, error::Error::InvalidTokenAccountOwner);
