@@ -9,6 +9,7 @@ pub struct Withdraw<'info> {
     pub withdrawer: Signer<'info>,
 
     #[account(
+        mut,
         seeds = [state::DAOMint::SEED_PREFIX,],
         bump,
     )]
@@ -61,12 +62,13 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     fridge_dao::cpi::withdraw(cpi_ctx, amount)?;
 
     lib::transfer(
-        ctx.accounts.user_token_account.to_account_info(), 
         ctx.accounts.vault.to_account_info(),
+        ctx.accounts.user_token_account.to_account_info(), 
         ctx.accounts.dao_mint.to_account_info(), 
         ctx.accounts.usdc_mint.to_account_info(),
         ctx.accounts.token_program.to_account_info(),
-        amount
+        amount,
+        signer_seeds
     )?;
 
     Ok(())

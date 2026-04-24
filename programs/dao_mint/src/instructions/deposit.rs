@@ -41,21 +41,22 @@ pub struct Deposit<'info> {
 pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
     require!(ctx.accounts.dao_mint.valid_member_keys.iter().any(|user| user.key == ctx.accounts.depositor.key()), error::Error::InvalidMember);
 
-    lib::transfer(
-        ctx.accounts.user_token_account.to_account_info(),
-        ctx.accounts.vault.to_account_info(),
-        ctx.accounts.depositor.to_account_info(),
-        ctx.accounts.usdc_mint.to_account_info(),
-        ctx.accounts.token_program.to_account_info(),
-        amount
-    )?;
-
     let seeds = &[
         state::DAOMint::SEED_PREFIX,
         &[ctx.bumps.dao_mint][..],
     ];
 
     let signer_seeds = &[&seeds[..]];
+
+    lib::transfer(
+        ctx.accounts.user_token_account.to_account_info(),
+        ctx.accounts.vault.to_account_info(),
+        ctx.accounts.depositor.to_account_info(),
+        ctx.accounts.usdc_mint.to_account_info(),
+        ctx.accounts.token_program.to_account_info(),
+        amount,
+        signer_seeds
+    )?;
 
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.dao_program.to_account_info(),

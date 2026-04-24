@@ -100,6 +100,9 @@ describe("Depositing", async () => {
 
     it("allows deposits", async () => {
         const { daoMintProgram, fridgeDaoProgram, tokenProgram, daoMintPda, provider, fridgeDaoPda, vault, usdcMint } = ctx;
+        
+        const vaultAccountBefore = await getAccount(provider.connection, vault);
+        const vaultBalanceBefore = vaultAccountBefore.amount;
 
         await daoMintProgram.methods
         .deposit(new anchor.BN(100000000))
@@ -124,7 +127,7 @@ describe("Depositing", async () => {
 
         const vaultAccount = await getAccount(provider.connection, vault);
         assert(
-            vaultAccount.amount === BigInt(100_000_000),
+            vaultAccount.amount === vaultBalanceBefore + BigInt(100_000_000),
             "Vault balance not incremented correctly"
         );
 
