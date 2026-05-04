@@ -42,4 +42,8 @@ pub enum Error {
     InvalidTokenAccount,
     #[msg("Invalid amount")]
     InvalidAmount,
+    #[msg("There is no tie to be resolved")]
+    NoTie,
+    #[msg("This proposal is not one of the tied proposals")]
+    ProposalNotInTies,
 }

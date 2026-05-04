@@ -132,7 +132,7 @@ describe("Withdrawing", async () => {
         );
 
         const fridgeDao = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);
-                assert(
+        assert(
             fridgeDao.validMemberKeys.some(u => {
                     if (u.key.toBase58() === addedKey.publicKey.toBase58()) {
                         return u.balance.eq(new anchor.BN(100000000));
@@ -142,6 +142,8 @@ describe("Withdrawing", async () => {
             ),
             "User funds not added to DAO"
         );
+
+        assert(BigInt(fridgeDao.vaultBalance.toString()) === vaultBalanceBefore + BigInt(100_000_000), "Funds not added to DAO vault");
 
         await daoMintProgram.methods
         .withdraw(new anchor.BN(100000000))
@@ -182,5 +184,6 @@ describe("Withdrawing", async () => {
             "User funds not removed from DAO"
         );
 
+        assert(BigInt(newDaoState.vaultBalance.toString()) === vaultBalanceBefore, "Funds not removed from DAO vault");
     });
 });

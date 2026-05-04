@@ -22,7 +22,9 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
     require!(ctx.accounts.signer.key() == ctx.accounts.fridge_dao.mint_admin_program, error::Error::InvalidAuthority);
     require!(ctx.accounts.fridge_dao.valid_member_keys.iter().any(|user| user.key == ctx.accounts.user.key()), error::Error::InvalidMember);
 
-    let user = ctx.accounts.fridge_dao
+    let dao = &mut ctx.accounts.fridge_dao;
+
+    let user = dao
         .valid_member_keys
         .iter_mut()
         .find(|user| user.key == ctx.accounts.user.key())
@@ -32,6 +34,10 @@ pub fn withdraw(ctx: Context<Withdraw>, amount: u64) -> Result<()> {
 
     user.balance = user
         .balance
+        .checked_sub(amount)
+        .ok_or(error::Error::MathOverflowOrUnderflow)?;
+
+    dao.vault_balance = dao.vault_balance
         .checked_sub(amount)
         .ok_or(error::Error::MathOverflowOrUnderflow)?;
 

@@ -34,5 +34,7 @@ pub fn deposit(ctx: Context<Deposit>, amount: u64) -> Result<()> {
         .checked_add(amount)
         .ok_or(error::Error::MathOverflowOrUnderflow)?;
 
+    dao.vault_balance = dao.vault_balance.checked_add(amount).ok_or(error::Error::MathOverflowOrUnderflow)?;
+
     Ok(())
 }

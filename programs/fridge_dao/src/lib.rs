@@ -60,4 +60,9 @@ pub mod fridge_dao {
         instructions::blacklist_keys(ctx, keys_to_remove)?;
         Ok(())
     }
+
+    pub fn resolve_tie(ctx: Context<ResolveTie>, winner: Pubkey) -> Result<()> {
+        instructions::resolve_tie(ctx, winner)?;
+        Ok(())
+    }
 }

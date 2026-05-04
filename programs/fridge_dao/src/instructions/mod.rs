@@ -9,6 +9,7 @@ mod cancel_proposal;
 mod update_vote_cooldown;
 mod whitelist_keys;
 mod blacklist_keys;
+mod resolve_tie;
 
 pub use init::*;
 pub use deposit::*;
@@ -20,3 +21,4 @@ pub use cancel_proposal::*;
 pub use update_vote_cooldown::*;
 pub use whitelist_keys::*;
 pub use blacklist_keys::*;
+pub use resolve_tie::*;

@@ -45,12 +45,17 @@ pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'i
     }
 
     if ties.len() > 0 {
-        emit!(state::Tie {
+        dao.tie = Some(state::Tie {
+            score: max_score,
+            winners: ties.clone(),
+        });
+
+        emit!(state::TieEvent {
             score: max_score,
             winners: ties,
         });
         return Ok(());
-    } // TODO resolve ties
+    }
 
     let remaining = vault_balance.checked_sub(max_score).ok_or(error::Error::MathOverflowOrUnderflow)?;
 
@@ -64,5 +69,6 @@ pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'i
 
     dao.recent_winner = winner;
 
+    emit!(state::WinnerChosen {proposal: winner});
     Ok(())
 }

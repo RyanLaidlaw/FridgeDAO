@@ -5,8 +5,22 @@ pub const MAX_PROPOSALS: usize = 15;
 pub const DECIMALS: u8 = 6; // 6 decimals for USDC
 
 #[event]
+pub struct TieEvent {
+    pub score: u64,
+    pub winners: Vec<Pubkey>,
+}
+
+#[event]
+
+pub struct WinnerChosen {
+    pub proposal: Pubkey,
+}
+
+#[account]
+#[derive(InitSpace)]
 pub struct Tie {
     pub score: u64,
+    #[max_len(MAX_PROPOSALS)]
     pub winners: Vec<Pubkey>,
 }
 
@@ -22,6 +36,7 @@ pub struct UserWithBalance {
 pub struct FridgeDao {
     pub mint_admin_program: Pubkey,
     pub admin: Pubkey,
+    pub vault_balance: u64,
     pub bump: u8,
     pub proposal_count: u64,
     pub vote_period: u64, // duration of voting period (seconds)
@@ -32,6 +47,7 @@ pub struct FridgeDao {
     #[max_len(MAX_MEMBERS)]
     pub valid_member_keys: Vec<UserWithBalance>,
     pub recent_winner: Pubkey,
+    pub tie: Option<Tie>,
 }
 
 impl FridgeDao {
