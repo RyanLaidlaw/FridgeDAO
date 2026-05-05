@@ -1,8 +1,8 @@
 import * as anchor from "@coral-xyz/anchor";
-import { setup } from "./setup/setup";
+import { setup } from "../setup";
 import { assert } from "chai";
 
-describe("initialization", async () => {
+describe("DAO Mint - Initialization", async () => {
     let ctx;
     before(async () => {ctx = await setup();});
 

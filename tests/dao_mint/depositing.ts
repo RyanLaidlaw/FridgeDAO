@@ -1,11 +1,11 @@
-import { setup } from "./setup/setup";
+import { setup } from "../setup";
 import { expectAnchorError, createATA } from "./helpers/helpers";
 import { assert } from "chai";
 import { Keypair } from "@solana/web3.js";
 import * as anchor from "@coral-xyz/anchor";
 import { mintTo, getAccount } from "@solana/spl-token";
 
-describe("Depositing", async () => {
+describe("DAO Mint - Depositing", async () => {
     let ctx;
     let addedKey: Keypair;
     let addedAta: any;

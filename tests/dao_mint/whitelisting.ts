@@ -1,9 +1,9 @@
-import { setup } from "./setup/setup";
+import { setup } from "../setup";
 import { expectAnchorError, createATA } from "./helpers/helpers";
 import { assert } from "chai";
 import { Keypair } from "@solana/web3.js";
 
-describe("whitelisting", async () => {
+describe("DAO Mint - Whitelisting", async () => {
     let ctx;
     before(async () => {ctx = await setup();});
 

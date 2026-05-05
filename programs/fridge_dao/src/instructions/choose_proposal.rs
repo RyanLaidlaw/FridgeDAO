@@ -18,7 +18,7 @@ pub struct Choose<'info> {
     pub usdc_mint: InterfaceAccount<'info, Mint>,
 }
 
-pub fn choose_proposal<'info>(ctx: Context<'_, '_, 'info, 'info, Choose<'info>>) -> Result<()> { //TODO close proposal account when it wins
+pub fn choose_proposal<'info>(ctx: Context<'_, '_, 'info, 'info, Choose<'info>>) -> Result<()> { //TODO close proposal account when it wins, close vote account
     let dao = &mut ctx.accounts.fridge_dao;
 
     require!(ctx.accounts.chooser.key() == dao.admin, error::Error::InvalidAuthority);

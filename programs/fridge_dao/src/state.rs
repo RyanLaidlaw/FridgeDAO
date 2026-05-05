@@ -64,7 +64,6 @@ pub struct Proposal {
     pub proposer: Pubkey,
     #[max_len(50)]
     pub description: String,
-    pub bump: u8,
     pub price: u64,
 }
 

@@ -43,8 +43,9 @@ pub fn retrieve_winner(ctx: Context<RetrieveWinner>) -> Result<()> {
     output.voters = winner.voters;
     output.proposer = winner.proposer;
     output.description = winner.description;
-    output.bump = winner.bump;
     output.price = winner.price;
+
+    dao.proposal_count -= 1;
 
     Ok(())
 }

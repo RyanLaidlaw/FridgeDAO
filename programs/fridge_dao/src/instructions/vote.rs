@@ -3,7 +3,6 @@ use anchor_lang::prelude::*;
 use crate::{instructions::lib, error, state};
 
 #[derive(Accounts)]
-#[instruction(proposal_id: u64)]
 pub struct Vote<'info> {
     #[account(mut)]
     pub voter: Signer<'info>,
@@ -15,15 +14,7 @@ pub struct Vote<'info> {
     )]
     pub fridge_dao: Account<'info, state::FridgeDao>,
 
-    #[account(
-        mut,
-        seeds = [
-            state::Proposal::SEED_PREFIX,
-            fridge_dao.key().as_ref(),
-            proposal_id.to_le_bytes().as_ref(),
-        ],
-        bump
-    )]
+    #[account(mut)]
     pub proposal: Account<'info, state::Proposal>,
 
     #[account(
@@ -54,7 +45,7 @@ pub fn vote(ctx: Context<Vote>, proposal_id: u64) -> Result<()> {
     let voting_end = lib::get_voting_end(&dao)?;
 
     require!(proposal_id == proposal.identifier, error::Error::CouldNotFindProposal);
-    require!(!proposal.voters.contains(voter.key), error::Error::AlreadyVoted);
+    require!(!proposal.voters.contains(&voter.key), error::Error::AlreadyVoted);
     require!(now >= dao.next_vote_allowed_at && now < voting_end, error::Error::NotInVotingPeriod);
 
     vote.proposal = proposal.key();

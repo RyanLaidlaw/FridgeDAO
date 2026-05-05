@@ -1,9 +1,9 @@
-import { setup } from "./setup/setup";
+import { setup } from "../setup";
 import { expectAnchorError, createATA } from "./helpers/helpers";
 import { assert } from "chai";
 import { Keypair } from "@solana/web3.js";
 
-describe("blacklisting", async () => {
+describe("DAO Mint - Blacklisting", async () => {
     let ctx;
     let addedKey: Keypair;
     let addedAta: any;
@@ -11,7 +11,7 @@ describe("blacklisting", async () => {
     before(async () => {
         ctx = await setup();
 
-        const { daoMintProgram, fridgeDaoProgram, provider, daoMintPda, fridgeDaoPda, authority, vault, usdcMint } = ctx;
+        const { daoMintProgram, fridgeDaoProgram, provider, daoMintPda, fridgeDaoPda, authority, usdcMint } = ctx;
 
         const newKey = Keypair.generate();
         addedKey = newKey;

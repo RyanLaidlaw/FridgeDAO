@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { DaoMint } from "../../../target/types/dao_mint";
-import { FridgeDao } from "../../../target/types/fridge_dao";
+import { DaoMint } from "../target/types/dao_mint";
+import { FridgeDao } from "../target/types/fridge_dao";
 import { 
     TOKEN_PROGRAM_ID, 
     createMint, 

@@ -41,7 +41,7 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn cancel_proposal(ctx: Context<Cancel>, _proposal_id: u64) -> Result<()> {
+    pub fn cancel_proposal(ctx: Context<Cancel>) -> Result<()> {
         instructions::cancel_proposal(ctx)?;
         Ok(())
     }

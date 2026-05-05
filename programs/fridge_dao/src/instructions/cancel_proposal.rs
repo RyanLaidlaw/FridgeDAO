@@ -3,7 +3,6 @@ use anchor_lang::prelude::*;
 use crate::{error, state};
 
 #[derive(Accounts)]
-#[instruction(proposal_id: u64)]
 pub struct Cancel<'info> {
     #[account(mut)]
     pub canceller: Signer<'info>,
@@ -17,12 +16,6 @@ pub struct Cancel<'info> {
 
     #[account(
         mut,
-        seeds = [
-            state::Proposal::SEED_PREFIX,
-            fridge_dao.key().as_ref(),
-            proposal_id.to_le_bytes().as_ref(),
-        ],
-        bump = proposal.bump,
         has_one = proposer,
         close = proposer
     )]
@@ -43,6 +36,7 @@ pub fn cancel_proposal(ctx: Context<Cancel>) -> Result<()> {
     require!(is_admin || is_proposer, error::Error::InvalidAuthority);
 
     dao.proposals.retain(|x|  *x != proposal.key());
+    dao.proposal_count -= 1;
 
     Ok(())
 }
