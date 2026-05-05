@@ -17,7 +17,7 @@ fn _sqrt(n: u64) -> u64 {
 
 pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'info [AccountInfo<'info>], vault_balance: u64) -> Result<()> {
     let mut max_score: u64 = 0;
-    let mut winner: Pubkey = Pubkey::default();
+    let mut winner: Option<(Pubkey, state::Proposal)> = None;
     let mut ties: Vec<Pubkey> = Vec::new();
     
     for proposal_info in remaining_accounts.iter() {
@@ -35,10 +35,13 @@ pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'i
 
         if score > max_score {
             max_score = score;
-            winner = proposal.key();
+            ties.clear();
+            winner = Some((proposal.key(), proposal.into_inner().clone()));
         } else if score == max_score {
-            if !ties.contains(&winner) {
-                ties.push(winner);
+            if let Some((ref w, _)) = winner {
+                if !ties.contains(w) {
+                    ties.push(*w);
+                }
             }
             ties.push(proposal.key());
         }
@@ -57,7 +60,9 @@ pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'i
         return Ok(());
     }
 
-    let remaining = vault_balance.checked_sub(max_score).ok_or(error::Error::MathOverflowOrUnderflow)?;
+    let (_, winner_proposal) = winner.ok_or(error::Error::NoWinner)?;
+
+    let remaining = vault_balance.checked_sub(winner_proposal.price).ok_or(error::Error::MathOverflowOrUnderflow)?;
 
     for user in dao.valid_member_keys.iter_mut() {
         user.balance = user.balance
@@ -67,8 +72,12 @@ pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'i
             .ok_or(error::Error::MathOverflowOrUnderflow)?;
     }
 
-    dao.recent_winner = winner;
+    emit!(state::WinnerChosen {
+        description: winner_proposal.description.clone(),
+        price: winner_proposal.price
+    });
 
-    emit!(state::WinnerChosen {proposal: winner});
+    dao.recent_winner = Some(winner_proposal); 
+
     Ok(())
 }

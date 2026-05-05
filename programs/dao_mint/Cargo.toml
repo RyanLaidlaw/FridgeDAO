@@ -1,7 +1,7 @@
 [package]
 name = "dao_mint"
 version = "0.1.0"
-description = "Created with Anchor"
+description = "The vault containing real funds to control the FridgeDAO."
 edition = "2021"
 
 [lib]

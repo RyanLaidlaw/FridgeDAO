@@ -32,7 +32,7 @@ pub struct Propose<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn propose(ctx: Context<Propose>, description: String) -> Result<()> {
+pub fn propose(ctx: Context<Propose>, description: String, price: u64) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
     let proposal = &mut ctx.accounts.proposal;
 
@@ -45,6 +45,7 @@ pub fn propose(ctx: Context<Propose>, description: String) -> Result<()> {
     dao.proposals.push(proposal.key());
 
     proposal.identifier = dao.proposal_count;
+    proposal.price = price;
     proposal.voters = Vec::new();
     proposal.proposer = ctx.accounts.proposer.key();
     proposal.description = description;

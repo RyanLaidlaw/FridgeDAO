@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 use crate::{state, error};
 
 #[derive(Accounts)]
+#[instruction(proposal_id: u64)]
 pub struct ResolveTie<'info> {
     #[account(mut)]
     pub resolver: Signer<'info>,
@@ -12,16 +13,36 @@ pub struct ResolveTie<'info> {
         seeds = [state::FridgeDao::SEED_PREFIX,],
         bump,
     )]
+    
     pub fridge_dao: Account<'info, state::FridgeDao>,
+
+        #[account(
+        mut,
+        seeds = [
+            state::Proposal::SEED_PREFIX,
+            fridge_dao.key().as_ref(),
+            proposal_id.to_le_bytes().as_ref(),
+        ],
+        bump = proposal.bump,
+        has_one = proposer,
+        close = proposer
+    )]
+    pub proposal: Account<'info, state::Proposal>,
+
+    /// CHECK: validated by `has_one`
+    #[account(mut)]
+    pub proposer: UncheckedAccount<'info>,
 }
 
-pub fn resolve_tie(ctx: Context<ResolveTie>, winner: Pubkey) -> Result<()> {
+pub fn resolve_tie(ctx: Context<ResolveTie>) -> Result<()> {
     let dao = &mut ctx.accounts.fridge_dao;
 
     require!(ctx.accounts.resolver.key() == dao.admin.key(), error::Error::InvalidAuthority);
 
     let tie: state::Tie = dao.tie.clone().ok_or(error::Error::NoTie)?;
-    require!(tie.winners.contains(&winner), error::Error::ProposalNotInTies);
+    let winner = &ctx.accounts.proposal;
+
+    require!(tie.winners.contains(&winner.key()), error::Error::ProposalNotInTies);
 
     let remaining = dao.vault_balance.checked_sub(tie.score).ok_or(error::Error::MathOverflowOrUnderflow)?;
     let vault_balance = dao.vault_balance;
@@ -34,12 +55,25 @@ pub fn resolve_tie(ctx: Context<ResolveTie>, winner: Pubkey) -> Result<()> {
             .ok_or(error::Error::MathOverflowOrUnderflow)?;
     }
 
-    dao.recent_winner = winner;
+    dao.recent_winner = Some(state::Proposal {
+        identifier: winner.identifier,
+        voters: winner.voters.clone(),
+        proposer: winner.proposer,
+        description: winner.description.clone(),
+        bump: winner.bump,
+        price: winner.price,
+    });
+
     dao.tie = None;
 
     let now = Clock::get()?.unix_timestamp;
     dao.next_vote_allowed_at = now + dao.vote_cooldown as i64;
+    dao.proposals.retain(|x|  *x != winner.key());
 
-    emit!(state::WinnerChosen {proposal: winner});
+    emit!(state::WinnerChosen {
+        description: winner.description.clone(),
+        price: winner.price
+    });
+
     Ok(())
 }

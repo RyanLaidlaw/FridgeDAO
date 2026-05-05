@@ -31,8 +31,8 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn propose(ctx: Context<Propose>, description: String) -> Result<()> {
-        instructions::propose(ctx, description)?;
+    pub fn propose(ctx: Context<Propose>, description: String, price: u64) -> Result<()> {
+        instructions::propose(ctx, description, price)?;
         Ok(())
     }
 
@@ -61,8 +61,13 @@ pub mod fridge_dao {
         Ok(())
     }
 
-    pub fn resolve_tie(ctx: Context<ResolveTie>, winner: Pubkey) -> Result<()> {
-        instructions::resolve_tie(ctx, winner)?;
+    pub fn resolve_tie(ctx: Context<ResolveTie>) -> Result<()> {
+        instructions::resolve_tie(ctx)?;
+        Ok(())
+    }
+
+    pub fn retrieve_winner(ctx: Context<RetrieveWinner>) -> Result<()> {
+        instructions::retrieve_winner(ctx)?;
         Ok(())
     }
 }

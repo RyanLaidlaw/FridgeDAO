@@ -46,4 +46,6 @@ pub enum Error {
     NoTie,
     #[msg("This proposal is not one of the tied proposals")]
     ProposalNotInTies,
+    #[msg("Winner has not been chosen yet")]
+    NoWinner,
 }

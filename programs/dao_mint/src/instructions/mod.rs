@@ -4,9 +4,11 @@ mod blacklist_keys;
 mod deposit;
 mod withdraw;
 mod lib;
+mod withdraw_proposal_amt;
 
 pub use init::*;
 pub use whitelist_keys::*;
 pub use blacklist_keys::*;
 pub use deposit::*;
 pub use withdraw::*;
+pub use withdraw_proposal_amt::*;

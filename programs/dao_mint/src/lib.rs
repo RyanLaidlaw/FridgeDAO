@@ -35,4 +35,9 @@ pub mod dao_mint {
         instructions::withdraw(ctx, amount)?;
         Ok(())
     }
+
+    pub fn withdraw_proposal_amount<'info>(ctx: Context<'_, '_, 'info, 'info, WithdrawProposalAmt<'info>>) -> Result<()> {
+        instructions::withdraw_proposal_amount(ctx)?;
+        Ok(())
+    }
 }

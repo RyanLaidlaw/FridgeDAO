@@ -45,6 +45,7 @@ pub fn initialize(ctx: Context<InitDAO>, vote_period_len: u64, time_until_first_
     dao.vote_cooldown = 1_209_600; // two weeks (can be updated)
     dao.proposals = Vec::new();
     dao.tie = None;
+    dao.recent_winner = None;
     
     dao.valid_member_keys = vec![
         UserWithBalance {

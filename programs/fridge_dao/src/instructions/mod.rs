@@ -10,6 +10,7 @@ mod update_vote_cooldown;
 mod whitelist_keys;
 mod blacklist_keys;
 mod resolve_tie;
+mod retrieve_winner;
 
 pub use init::*;
 pub use deposit::*;
@@ -22,3 +23,4 @@ pub use update_vote_cooldown::*;
 pub use whitelist_keys::*;
 pub use blacklist_keys::*;
 pub use resolve_tie::*;
+pub use retrieve_winner::*;

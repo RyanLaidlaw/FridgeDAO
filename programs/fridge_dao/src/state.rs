@@ -13,7 +13,8 @@ pub struct TieEvent {
 #[event]
 
 pub struct WinnerChosen {
-    pub proposal: Pubkey,
+    pub description: String,
+    pub price: u64,
 }
 
 #[account]
@@ -46,8 +47,8 @@ pub struct FridgeDao {
     pub proposals: Vec<Pubkey>,
     #[max_len(MAX_MEMBERS)]
     pub valid_member_keys: Vec<UserWithBalance>,
-    pub recent_winner: Pubkey,
     pub tie: Option<Tie>,
+    pub recent_winner: Option<Proposal>,
 }
 
 impl FridgeDao {
@@ -63,7 +64,8 @@ pub struct Proposal {
     pub proposer: Pubkey,
     #[max_len(50)]
     pub description: String,
-    pub bump: u8
+    pub bump: u8,
+    pub price: u64,
 }
 
 impl Proposal {

@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token_interface::{Mint, TokenAccount};
+use anchor_spl::token_interface::{Mint};
 
 use crate::{instructions::lib, state, error};
 
@@ -16,16 +16,9 @@ pub struct Choose<'info> {
     pub fridge_dao: Account<'info, state::FridgeDao>,
 
     pub usdc_mint: InterfaceAccount<'info, Mint>,
-
-    #[account(
-        mut,
-        constraint = admin_token_account.owner == chooser.key() @ error::Error::InvalidTokenAccount,
-        constraint = admin_token_account.mint == usdc_mint.key() @ error::Error::InvalidMint
-    )]
-    pub admin_token_account: InterfaceAccount<'info, TokenAccount>,
 }
 
-pub fn choose_proposal<'info>(ctx: Context<'_, '_, 'info, 'info, Choose<'info>>) -> Result<()> {
+pub fn choose_proposal<'info>(ctx: Context<'_, '_, 'info, 'info, Choose<'info>>) -> Result<()> { //TODO close proposal account when it wins
     let dao = &mut ctx.accounts.fridge_dao;
 
     require!(ctx.accounts.chooser.key() == dao.admin, error::Error::InvalidAuthority);

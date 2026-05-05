@@ -30,4 +30,6 @@ pub enum Error {
     InvalidVault,
     #[msg("Invalid member")]
     InvalidMember,
+    #[msg("Insufficient funds for this item")]
+    InsufficientFunds,
 }
