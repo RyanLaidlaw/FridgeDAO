@@ -59,7 +59,7 @@ impl FridgeDao {
 #[derive(InitSpace)]
 pub struct Proposal {
     pub identifier: u64,
-    #[max_len(35)]
+    #[max_len(MAX_MEMBERS)]
     pub voters: Vec<Pubkey>,
     pub proposer: Pubkey,
     #[max_len(50)]
