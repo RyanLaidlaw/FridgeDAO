@@ -2,7 +2,6 @@ import { assert } from "chai";
 import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import BN from "bn.js";
 
 export async function expectAnchorError(promise: Promise<any>, code: string) {
   try {
@@ -27,15 +26,4 @@ export async function createATA(user: PublicKey, provider: AnchorProvider, usdcM
   );
 
   return userAta.address;
-}
-
-export function getVotePda(proposal: Keypair, auth: Keypair, fridgeDaoProgram: Program) {
-  return PublicKey.findProgramAddressSync(
-      [
-          Buffer.from("vote"),
-          proposal.publicKey.toBuffer(),
-          auth.publicKey.toBuffer(),
-      ],
-      fridgeDaoProgram.programId
-  );
 }

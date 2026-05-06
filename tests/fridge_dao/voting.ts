@@ -1,5 +1,5 @@
 import { setup } from "../setup";
-import { expectAnchorError, createATA, getVotePda } from "./helpers/helpers";
+import { expectAnchorError, createATA } from "./helpers/helpers";
 import { assert } from "chai";
 import { Keypair } from "@solana/web3.js";
 import * as anchor from "@coral-xyz/anchor";
@@ -82,8 +82,6 @@ describe("FridgeDAO - Voting", async () => {
         let sig = await provider.connection.requestAirdrop(invalidAuth.publicKey, 1e9);
         await provider.connection.confirmTransaction(sig);
 
-        const [votePda] = getVotePda(proposal, invalidAuth, fridgeDaoProgram);
-
         await expectAnchorError(
             fridgeDaoProgram.methods
                 .vote(new anchor.BN(proposalCount))
@@ -91,8 +89,6 @@ describe("FridgeDAO - Voting", async () => {
                     voter: invalidAuth.publicKey,
                     fridgeDao: fridgeDaoPda,
                     proposal: proposal.publicKey,
-                    vote: votePda,
-                    systemProgram: SYSTEM_PROGRAM_ID,
                 })
                 .signers([invalidAuth])
                 .rpc(),
@@ -103,16 +99,12 @@ describe("FridgeDAO - Voting", async () => {
     it.skip("Blocks voting for same thing more than once", async () => {
         let {fridgeDaoProgram, fridgeDaoPda} = ctx;
 
-        const [votePda] = getVotePda(proposal, addedKey, fridgeDaoProgram);
-
         await fridgeDaoProgram.methods
             .vote(new anchor.BN(proposalCount))
             .accounts({
                 voter: addedKey.publicKey,
                 fridgeDao: fridgeDaoPda,
                 proposal: proposal.publicKey,
-                vote: votePda,
-                systemProgram: SYSTEM_PROGRAM_ID,
             })
             .signers([addedKey])
             .rpc();
@@ -124,8 +116,6 @@ describe("FridgeDAO - Voting", async () => {
                     voter: addedKey.publicKey,
                     fridgeDao: fridgeDaoPda,
                     proposal: proposal.publicKey,
-                    vote: votePda,
-                    systemProgram: SYSTEM_PROGRAM_ID,
                 })
                 .signers([addedKey])
                 .rpc(),
@@ -136,8 +126,6 @@ describe("FridgeDAO - Voting", async () => {
     it("Blocks voting for invalid proposal", async () => {
         let {fridgeDaoProgram, fridgeDaoPda} = ctx;
 
-        const [votePda] = getVotePda(proposal, addedKey, fridgeDaoProgram);
-
         await expectAnchorError(
             fridgeDaoProgram.methods
                 .vote(new anchor.BN(proposalCount + 1))
@@ -145,8 +133,6 @@ describe("FridgeDAO - Voting", async () => {
                     voter: addedKey.publicKey,
                     fridgeDao: fridgeDaoPda,
                     proposal: proposal.publicKey,
-                    vote: votePda,
-                    systemProgram: SYSTEM_PROGRAM_ID,
                 })
                 .signers([addedKey])
                 .rpc(),
@@ -157,8 +143,6 @@ describe("FridgeDAO - Voting", async () => {
     it("Blocks voting outside of vote period", async() => {
         let {fridgeDaoProgram, fridgeDaoPda} = ctx;
 
-        const [votePda] = getVotePda(proposal, addedKey, fridgeDaoProgram);
-
         await expectAnchorError(
             fridgeDaoProgram.methods
                 .vote(new anchor.BN(proposalCount))
@@ -166,8 +150,6 @@ describe("FridgeDAO - Voting", async () => {
                     voter: addedKey.publicKey,
                     fridgeDao: fridgeDaoPda,
                     proposal: proposal.publicKey,
-                    vote: votePda,
-                    systemProgram: SYSTEM_PROGRAM_ID,
                 })
                 .signers([addedKey])
                 .rpc(),

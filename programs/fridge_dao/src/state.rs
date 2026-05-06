@@ -70,15 +70,3 @@ pub struct Proposal {
 impl Proposal {
     pub const SEED_PREFIX: &'static [u8; 11] = b"fridge_prop";
 }
-
-#[account]
-#[derive(InitSpace)]
-pub struct UserVote {
-    pub proposal: Pubkey,
-    pub voter: Pubkey,
-    pub bump: u8,
-}
-
-impl UserVote {
-    pub const SEED_PREFIX: &'static [u8] = b"vote";
-}
