@@ -15,6 +15,7 @@ pub struct TieEvent {
 pub struct WinnerChosen {
     pub description: String,
     pub price: u64,
+    pub proposer: Pubkey,
 }
 
 #[account]
@@ -65,6 +66,7 @@ pub struct Proposal {
     #[max_len(50)]
     pub description: String,
     pub price: u64,
+    pub bump: u8,
 }
 
 impl Proposal {

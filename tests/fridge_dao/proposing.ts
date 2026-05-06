@@ -1,9 +1,9 @@
 import { setup } from "../setup";
-import { expectAnchorError, createATA } from "./helpers/helpers";
+import { expectAnchorError, createATA, getProposalPda } from "./helpers/helpers";
 import { assert } from "chai";
 import { Keypair } from "@solana/web3.js";
 import * as anchor from "@coral-xyz/anchor";
-import { mintTo, getAccount } from "@solana/spl-token";
+import { mintTo } from "@solana/spl-token";
 import { SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
 
 describe("FridgeDAO - Proposing", async () => {
@@ -57,7 +57,8 @@ describe("FridgeDAO - Proposing", async () => {
         const sig = await provider.connection.requestAirdrop(invalidAuth.publicKey, 1e9);
         await provider.connection.confirmTransaction(sig);
 
-        const proposal = anchor.web3.Keypair.generate();
+        const daoAccountBefore = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);
+        const [proposalPda] = getProposalPda(fridgeDaoPda, fridgeDaoProgram, daoAccountBefore);
 
         await expectAnchorError(
             fridgeDaoProgram.methods
@@ -65,10 +66,10 @@ describe("FridgeDAO - Proposing", async () => {
                 .accounts({
                     proposer: invalidAuth.publicKey,
                     fridgeDao: fridgeDaoPda,
-                    proposal: proposal.publicKey,
+                    proposal: proposalPda,
                     systemProgram: SYSTEM_PROGRAM_ID,
                 })
-                .signers([invalidAuth, proposal])
+                .signers([invalidAuth])
                 .rpc(),
             "InvalidMember"
         );
@@ -85,17 +86,17 @@ describe("FridgeDAO - Proposing", async () => {
         let proposalCountBefore = daoAccountBefore.proposalCount.toNumber();
         let proposalsLengthBefore = daoAccountBefore.proposals.length;
         
-        const proposal = anchor.web3.Keypair.generate();
+        const [proposalPda] = getProposalPda(fridgeDaoPda, fridgeDaoProgram, daoAccountBefore);
 
         await fridgeDaoProgram.methods
             .propose("Cookies", new anchor.BN(10))
             .accounts({
                 proposer: addedKey.publicKey,
                 fridgeDao: fridgeDaoPda,
-                proposal: proposal.publicKey,
+                proposal: proposalPda,
                 systemProgram: SYSTEM_PROGRAM_ID,
             })
-            .signers([addedKey, proposal])
+            .signers([addedKey])
             .rpc()
         
         const daoAccountAfter = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);

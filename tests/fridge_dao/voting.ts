@@ -1,7 +1,7 @@
 import { setup } from "../setup";
-import { expectAnchorError, createATA } from "./helpers/helpers";
+import { expectAnchorError, createATA, getProposalPda } from "./helpers/helpers";
 import { assert } from "chai";
-import { Keypair } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import * as anchor from "@coral-xyz/anchor";
 import { mintTo } from "@solana/spl-token";
 import { SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
@@ -10,8 +10,8 @@ describe("FridgeDAO - Voting", async () => {
     let ctx;
     let addedKey: Keypair;
     let addedAta: any;
-    let proposal;
-    let proposalCount;
+    let proposalPda: PublicKey;
+    let proposalCount: Number;
 
     before(async () => {
         ctx = await setup();
@@ -55,18 +55,19 @@ describe("FridgeDAO - Voting", async () => {
         let proposalCountBefore = daoAccountBefore.proposalCount.toNumber();
         let proposalsLengthBefore = daoAccountBefore.proposals.length;
 
-        proposal = anchor.web3.Keypair.generate();
+        const [pda] = getProposalPda(fridgeDaoPda, fridgeDaoProgram, daoAccountBefore);
+        proposalPda = pda;
 
         await fridgeDaoProgram.methods
             .propose("Cookies", new anchor.BN(10))
             .accounts({
                 proposer: addedKey.publicKey,
                 fridgeDao: fridgeDaoPda,
-                proposal: proposal.publicKey,
+                proposal: proposalPda,
                 systemProgram: SYSTEM_PROGRAM_ID,
             })
-            .signers([addedKey, proposal])
-            .rpc()
+            .signers([addedKey])
+            .rpc();
         
         const daoAccountAfter = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);
         proposalCount = daoAccountAfter.proposalCount.toNumber();
@@ -88,7 +89,7 @@ describe("FridgeDAO - Voting", async () => {
                 .accounts({
                     voter: invalidAuth.publicKey,
                     fridgeDao: fridgeDaoPda,
-                    proposal: proposal.publicKey,
+                    proposal: proposalPda,
                 })
                 .signers([invalidAuth])
                 .rpc(),
@@ -104,7 +105,7 @@ describe("FridgeDAO - Voting", async () => {
             .accounts({
                 voter: addedKey.publicKey,
                 fridgeDao: fridgeDaoPda,
-                proposal: proposal.publicKey,
+                proposal: proposalPda,
             })
             .signers([addedKey])
             .rpc();
@@ -115,7 +116,7 @@ describe("FridgeDAO - Voting", async () => {
                 .accounts({
                     voter: addedKey.publicKey,
                     fridgeDao: fridgeDaoPda,
-                    proposal: proposal.publicKey,
+                    proposal: proposalPda,
                 })
                 .signers([addedKey])
                 .rpc(),
@@ -132,7 +133,7 @@ describe("FridgeDAO - Voting", async () => {
                 .accounts({
                     voter: addedKey.publicKey,
                     fridgeDao: fridgeDaoPda,
-                    proposal: proposal.publicKey,
+                    proposal: proposalPda,
                 })
                 .signers([addedKey])
                 .rpc(),
@@ -149,7 +150,7 @@ describe("FridgeDAO - Voting", async () => {
                 .accounts({
                     voter: addedKey.publicKey,
                     fridgeDao: fridgeDaoPda,
-                    proposal: proposal.publicKey,
+                    proposal: proposalPda,
                 })
                 .signers([addedKey])
                 .rpc(),

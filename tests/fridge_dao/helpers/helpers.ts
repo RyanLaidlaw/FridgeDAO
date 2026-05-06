@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { getOrCreateAssociatedTokenAccount } from "@solana/spl-token";
-import { AnchorProvider, Program } from "@coral-xyz/anchor";
+import * as anchor from "@coral-xyz/anchor";
 import { Keypair, PublicKey } from "@solana/web3.js";
 
 export async function expectAnchorError(promise: Promise<any>, code: string) {
@@ -16,7 +16,7 @@ export async function expectAnchorError(promise: Promise<any>, code: string) {
   }
 }
 
-export async function createATA(user: PublicKey, provider: AnchorProvider, usdcMint: PublicKey, authority) {
+export async function createATA(user: PublicKey, provider: anchor.AnchorProvider, usdcMint: PublicKey, authority) {
 
   const userAta = await getOrCreateAssociatedTokenAccount(
     provider.connection,
@@ -26,4 +26,15 @@ export async function createATA(user: PublicKey, provider: AnchorProvider, usdcM
   );
 
   return userAta.address;
+}
+
+export function getProposalPda(fridgeDaoPda: PublicKey, fridgeDaoProgram, daoAccount) {
+  return PublicKey.findProgramAddressSync(
+      [
+          Buffer.from("fridge_prop"),
+          fridgeDaoPda.toBuffer(),
+          new anchor.BN(daoAccount.proposalCount.toNumber() + 1).toArrayLike(Buffer, "le", 8),
+      ],
+      fridgeDaoProgram.programId
+  );
 }

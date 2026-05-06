@@ -42,6 +42,14 @@ pub struct WithdrawProposalAmt<'info> {
     )]
     pub winner_output: Account<'info, fridge_dao::state::Proposal>,
 
+    /// CHECK: validated by the CPI against dao.recent_winner
+    #[account(mut)]
+    pub winning_proposal: UncheckedAccount<'info>,
+
+    /// CHECK: validated by the CPI against winning_proposal.proposer
+    #[account(mut)]
+    pub proposer: UncheckedAccount<'info>,
+
     pub usdc_mint: InterfaceAccount<'info, Mint>,
 
     pub token_program: Interface<'info, TokenInterface>,
@@ -64,6 +72,8 @@ pub fn withdraw_proposal_amount<'info>(ctx: Context<'_, '_, 'info, 'info, Withdr
             retriever: ctx.accounts.dao_mint.to_account_info(),
             fridge_dao: ctx.accounts.fridge_dao.to_account_info(),
             winner_output: ctx.accounts.winner_output.to_account_info(),
+            winning_proposal: ctx.accounts.winning_proposal.to_account_info(),
+            proposer: ctx.accounts.proposer.to_account_info(),
             system_program: ctx.accounts.system_program.to_account_info(),
         },
         signer_seeds

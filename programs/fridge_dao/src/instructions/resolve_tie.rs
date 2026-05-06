@@ -16,7 +16,7 @@ pub struct ResolveTie<'info> {
     
     pub fridge_dao: Account<'info, state::FridgeDao>,
 
-        #[account(
+    #[account(
         mut,
         has_one = proposer,
         close = proposer
@@ -55,6 +55,7 @@ pub fn resolve_tie(ctx: Context<ResolveTie>) -> Result<()> {
         proposer: winner.proposer,
         description: winner.description.clone(),
         price: winner.price,
+        bump: winner.bump,
     });
 
     dao.tie = None;
@@ -65,7 +66,8 @@ pub fn resolve_tie(ctx: Context<ResolveTie>) -> Result<()> {
 
     emit!(state::WinnerChosen {
         description: winner.description.clone(),
-        price: winner.price
+        price: winner.price,
+        proposer: winner.proposer,
     });
 
     Ok(())

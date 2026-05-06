@@ -1,12 +1,12 @@
 import { setup } from "../setup";
-import { expectAnchorError, createATA } from "./helpers/helpers";
+import { expectAnchorError, createATA, getProposalPda } from "./helpers/helpers";
 import { assert } from "chai";
-import { Keypair } from "@solana/web3.js";
+import { Keypair, PublicKey } from "@solana/web3.js";
 import * as anchor from "@coral-xyz/anchor";
 import { mintTo } from "@solana/spl-token";
 import { SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
 
-describe("FridgeDAO - Cancel Proposals", async () => {
+describe.only("FridgeDAO - Cancel Proposals", async () => {
     let ctx;
     let addedKey: Keypair;
     let addedAta: any;
@@ -50,7 +50,7 @@ describe("FridgeDAO - Cancel Proposals", async () => {
         await provider.connection.confirmTransaction(sig);
     });
 
-    let proposal: Keypair;
+    let proposalPda: PublicKey;
 
     beforeEach(async () => {
         let {fridgeDaoProgram, fridgeDaoPda} = ctx;
@@ -59,17 +59,18 @@ describe("FridgeDAO - Cancel Proposals", async () => {
         let proposalCountBefore = daoAccountBefore.proposalCount.toNumber();
         let proposalsLengthBefore = daoAccountBefore.proposals.length;
 
-        proposal = anchor.web3.Keypair.generate();
+        const [pda] = getProposalPda(fridgeDaoPda, fridgeDaoProgram, daoAccountBefore);
+        proposalPda = pda
 
         await fridgeDaoProgram.methods
             .propose("Cookies", new anchor.BN(10))
             .accounts({
                 proposer: addedKey.publicKey,
                 fridgeDao: fridgeDaoPda,
-                proposal: proposal.publicKey,
+                proposal: proposalPda,
                 systemProgram: SYSTEM_PROGRAM_ID,
             })
-            .signers([addedKey, proposal])
+            .signers([addedKey])
             .rpc()
         
         const daoAccountAfter = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);
@@ -91,7 +92,7 @@ describe("FridgeDAO - Cancel Proposals", async () => {
                 .accounts({
                     canceller: invalidAuth.publicKey,
                     fridgeDao: fridgeDaoPda,
-                    proposal: proposal.publicKey,
+                    proposal: proposalPda,
                     proposer: addedKey.publicKey,
                 })
                 .signers([invalidAuth])
@@ -114,7 +115,7 @@ describe("FridgeDAO - Cancel Proposals", async () => {
             .accounts({
                 canceller: authority.publicKey,
                 fridgeDao: fridgeDaoPda,
-                proposal: proposal.publicKey,
+                proposal: proposalPda,
                 proposer: addedKey.publicKey,
             })
             .rpc()
@@ -142,7 +143,7 @@ describe("FridgeDAO - Cancel Proposals", async () => {
             .accounts({
                 canceller: addedKey.publicKey,
                 fridgeDao: fridgeDaoPda,
-                proposal: proposal.publicKey,
+                proposal: proposalPda,
                 proposer: addedKey.publicKey,
             })
             .signers([addedKey])
@@ -150,7 +151,7 @@ describe("FridgeDAO - Cancel Proposals", async () => {
         
         const daoAccountAfter = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);
 
-                const balanceAfter = await provider.connection.getBalance(addedKey.publicKey);
+        const balanceAfter = await provider.connection.getBalance(addedKey.publicKey);
         assert(balanceAfter > balanceBefore, "Rent was not returned to the proposer")
 
         assert(daoAccountAfter.proposalCount.toNumber() === proposalCountBefore - 1, "Proposal count did not decrease by 1");

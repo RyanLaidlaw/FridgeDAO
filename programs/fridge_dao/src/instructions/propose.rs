@@ -18,6 +18,12 @@ pub struct Propose<'info> {
         init,
         payer = proposer,
         space = 8 + state::Proposal::INIT_SPACE,
+        seeds = [
+            state::Proposal::SEED_PREFIX,
+            fridge_dao.key().as_ref(),
+            (fridge_dao.proposal_count + 1).to_le_bytes().as_ref(),
+        ],
+        bump,
     )]
     pub proposal: Account<'info, state::Proposal>,
 
@@ -40,6 +46,7 @@ pub fn propose(ctx: Context<Propose>, description: String, price: u64) -> Result
     proposal.voters = Vec::new();
     proposal.proposer = ctx.accounts.proposer.key();
     proposal.description = description;
+    proposal.bump = ctx.bumps.proposal;
 
     Ok(())
 }

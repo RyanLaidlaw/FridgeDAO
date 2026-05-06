@@ -17,7 +17,7 @@ fn _sqrt(n: u64) -> u64 {
 
 pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'info [AccountInfo<'info>], vault_balance: u64) -> Result<()> {
     let mut max_score: u64 = 0;
-    let mut winner: Option<(Pubkey, state::Proposal)> = None;
+    let mut winner: Option<(Pubkey, Account<state::Proposal>)> = None;
     let mut ties: Vec<Pubkey> = Vec::new();
     
     for proposal_info in remaining_accounts.iter() {
@@ -36,7 +36,7 @@ pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'i
         if score > max_score {
             max_score = score;
             ties.clear();
-            winner = Some((proposal.key(), proposal.into_inner().clone()));
+            winner = Some((proposal.key(), proposal));
         } else if score == max_score {
             if let Some((ref w, _)) = winner {
                 if !ties.contains(w) {
@@ -74,10 +74,11 @@ pub fn compute_winner<'info>(dao: &mut state::FridgeDao, remaining_accounts: &'i
 
     emit!(state::WinnerChosen {
         description: winner_proposal.description.clone(),
-        price: winner_proposal.price
+        price: winner_proposal.price,
+        proposer: winner_proposal.proposer,
     });
 
-    dao.recent_winner = Some(winner_proposal); 
+    dao.recent_winner = Some(winner_proposal.into_inner()); 
 
     Ok(())
 }
