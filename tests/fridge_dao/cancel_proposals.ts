@@ -6,7 +6,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { mintTo } from "@solana/spl-token";
 import { SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
 
-describe.only("FridgeDAO - Cancel Proposals", async () => {
+describe("FridgeDAO - Cancel Proposals", async () => {
     let ctx;
     let addedKey: Keypair;
     let addedAta: any;

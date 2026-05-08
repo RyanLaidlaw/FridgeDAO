@@ -75,8 +75,49 @@ describe("FridgeDAO - Proposing", async () => {
         );
     });
 
-    it.skip("Blocks after max proposals", async () => {
+    it("Blocks after max proposals", async () => {
+        const { fridgeDaoProgram, fridgeDaoPda } = ctx;
+        
+        const daoAccountBefore = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);
+        let proposalCountBefore = daoAccountBefore.proposalCount.toNumber();
+        let proposalsLengthBefore = daoAccountBefore.proposals.length;
 
+        for (let i = 0; i < 15; i++) {
+            const daoAccount = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);
+            const [proposalPda] = getProposalPda(fridgeDaoPda, fridgeDaoProgram, daoAccount);
+
+            await fridgeDaoProgram.methods
+                .propose("Cookies", new anchor.BN(10))
+                .accounts({
+                    proposer: addedKey.publicKey,
+                    fridgeDao: fridgeDaoPda,
+                    proposal: proposalPda,
+                    systemProgram: SYSTEM_PROGRAM_ID,
+                })
+                .signers([addedKey])
+                .rpc()
+        }
+        
+        const daoAccountAfter = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);
+
+        assert(daoAccountAfter.proposalCount.toNumber() === proposalCountBefore + 15, "Proposal count did not increase by 15");
+        assert(daoAccountAfter.proposals.length === proposalsLengthBefore + 15, "Proposals length did not increase by 15");
+
+        const [proposalPda] = getProposalPda(fridgeDaoPda, fridgeDaoProgram, daoAccountAfter);
+
+        await expectAnchorError(
+            fridgeDaoProgram.methods
+                .propose("Cookies", new anchor.BN(10))
+                .accounts({
+                    proposer: addedKey.publicKey,
+                    fridgeDao: fridgeDaoPda,
+                    proposal: proposalPda,
+                    systemProgram: SYSTEM_PROGRAM_ID,
+                })
+                .signers([addedKey])
+                .rpc(),
+            "AtMaxProposals"
+        );
     });
 
     it("Allows valid proposals", async () => {
