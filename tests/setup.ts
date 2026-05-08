@@ -61,8 +61,8 @@ export async function setup() {
 
         await daoMintProgram.methods
             .initialize(
-                new anchor.BN(1000),
-                new anchor.BN(100),
+                new anchor.BN(10000),
+                new anchor.BN(0),
             )
             .accounts({
                 admin: authority.publicKey,

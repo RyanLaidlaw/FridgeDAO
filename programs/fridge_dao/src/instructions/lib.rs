@@ -11,6 +11,10 @@ pub fn get_voting_end(dao: &Account<state::FridgeDao>) -> Result<i64> {
     Ok(voting_end)
 }
 
+pub fn is_in_voting_period(now: i64, vote_start: i64, voting_end: i64) -> bool {
+    now >= vote_start && now < voting_end
+}
+
 fn _sqrt(n: u64) -> u64 {
     (n as f64).sqrt() as u64
 }

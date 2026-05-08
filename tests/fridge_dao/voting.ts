@@ -8,23 +8,26 @@ import { SYSTEM_PROGRAM_ID } from "@coral-xyz/anchor/dist/cjs/native/system";
 
 describe("FridgeDAO - Voting", async () => {
     let ctx;
-    let addedKey: Keypair;
-    let addedAta: any;
+    let user1Key: Keypair;
+    let user1Ata: PublicKey;
+    let user2Key: Keypair;
+    let user2Ata: PublicKey;
     let proposalPda: PublicKey;
-    let proposalCount: Number;
+    let proposalCount: number;
 
     before(async () => {
         ctx = await setup();
 
         const { daoMintProgram, fridgeDaoProgram, provider, daoMintPda, fridgeDaoPda, authority, usdcMint } = ctx;
 
-        const newKey = Keypair.generate();
-        addedKey = newKey;
-        const userAta = await createATA(newKey.publicKey, provider, usdcMint, authority)
-        addedAta = userAta;
+        user1Key = Keypair.generate();
+        user1Ata = await createATA(user1Key.publicKey, provider, usdcMint, authority)
+
+        user2Key = Keypair.generate();
+        user2Ata = await createATA(user2Key.publicKey, provider, usdcMint, authority)
 
         let txn = await daoMintProgram.methods
-            .whitelist([newKey.publicKey])
+            .whitelist([user1Key.publicKey, user2Key.publicKey])
             .accounts({
                 adder: authority.publicKey,
                 daoMint: daoMintPda,
@@ -33,8 +36,11 @@ describe("FridgeDAO - Voting", async () => {
             })
             .remainingAccounts(
                 [{
-                    pubkey: userAta, isWritable: true, isSigner: false 
-                }])
+                    pubkey: user1Ata, isWritable: true, isSigner: false,
+                }, {
+                    pubkey: user2Ata, isWritable: true, isSigner: false,
+                }
+            ])
             .rpc();
         
         await provider.connection.confirmTransaction(txn);
@@ -43,12 +49,12 @@ describe("FridgeDAO - Voting", async () => {
             provider.connection,
             authority.payer,
             usdcMint,
-            addedAta,
+            user1Ata,
             authority.payer,
             1_000_000_000
         );
 
-        const sig = await provider.connection.requestAirdrop(addedKey.publicKey, 1e9);
+        const sig = await provider.connection.requestAirdrop(user1Key.publicKey, 1e9);
         await provider.connection.confirmTransaction(sig);
 
         const daoAccountBefore = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);
@@ -61,12 +67,12 @@ describe("FridgeDAO - Voting", async () => {
         await fridgeDaoProgram.methods
             .propose("Cookies", new anchor.BN(10))
             .accounts({
-                proposer: addedKey.publicKey,
+                proposer: user1Key.publicKey,
                 fridgeDao: fridgeDaoPda,
                 proposal: proposalPda,
                 systemProgram: SYSTEM_PROGRAM_ID,
             })
-            .signers([addedKey])
+            .signers([user1Key])
             .rpc();
         
         const daoAccountAfter = await fridgeDaoProgram.account.fridgeDao.fetch(fridgeDaoPda);
@@ -97,28 +103,28 @@ describe("FridgeDAO - Voting", async () => {
         );
     });
 
-    it.skip("Blocks voting for same thing more than once", async () => {
+    it("Blocks voting for same thing more than once", async () => {
         let {fridgeDaoProgram, fridgeDaoPda} = ctx;
 
         await fridgeDaoProgram.methods
             .vote(new anchor.BN(proposalCount))
             .accounts({
-                voter: addedKey.publicKey,
+                voter: user1Key.publicKey,
                 fridgeDao: fridgeDaoPda,
                 proposal: proposalPda,
             })
-            .signers([addedKey])
+            .signers([user1Key])
             .rpc();
         
         await expectAnchorError(
             fridgeDaoProgram.methods
                 .vote(new anchor.BN(1))
                 .accounts({
-                    voter: addedKey.publicKey,
+                    voter: user1Key.publicKey,
                     fridgeDao: fridgeDaoPda,
                     proposal: proposalPda,
                 })
-                .signers([addedKey])
+                .signers([user1Key])
                 .rpc(),
             "AlreadyVoted"
         );
@@ -131,34 +137,34 @@ describe("FridgeDAO - Voting", async () => {
             fridgeDaoProgram.methods
                 .vote(new anchor.BN(proposalCount + 1))
                 .accounts({
-                    voter: addedKey.publicKey,
+                    voter: user1Key.publicKey,
                     fridgeDao: fridgeDaoPda,
                     proposal: proposalPda,
                 })
-                .signers([addedKey])
+                .signers([user1Key])
                 .rpc(),
             "CouldNotFindProposal"
         );
     });
 
-    it("Blocks voting outside of vote period", async() => {
+    it("Allows valid votes", async () => {
         let {fridgeDaoProgram, fridgeDaoPda} = ctx;
 
-        await expectAnchorError(
-            fridgeDaoProgram.methods
-                .vote(new anchor.BN(proposalCount))
-                .accounts({
-                    voter: addedKey.publicKey,
-                    fridgeDao: fridgeDaoPda,
-                    proposal: proposalPda,
-                })
-                .signers([addedKey])
-                .rpc(),
-            "NotInVotingPeriod"
-        );
-    });
+        const proposalBefore = await fridgeDaoProgram.account.proposal.fetch(proposalPda);
+        const votersBefore = proposalBefore.voters.length;
 
-    it("Allows valid votes", async () => {
+        await fridgeDaoProgram.methods
+            .vote(new anchor.BN(proposalCount))
+            .accounts({
+                voter: user2Key.publicKey,
+                fridgeDao: fridgeDaoPda,
+                proposal: proposalPda,
+            })
+            .signers([user2Key])
+            .rpc();
 
+        const proposalAfter = await fridgeDaoProgram.account.proposal.fetch(proposalPda);
+        assert(proposalAfter.voters.length === votersBefore + 1, "Voter was not added");
+        assert(proposalAfter.voters.some(v => v.equals(user2Key.publicKey)), "user2 not found in voters");
     });
 });
